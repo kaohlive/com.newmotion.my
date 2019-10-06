@@ -1,0 +1,218 @@
+{
+    "id": "com.newmotion.my",
+    "name": {
+        "en": "My New Motion"
+    },
+    "sdk": 2,
+    "version": "2.0.0",
+    "compatibility": ">=1.5.0",
+    "permissions": [
+        "homey:manager:geolocation"
+    ],
+    "author": {
+        "name": "Kaoh",
+        "email": "kaoh@kaoh.nl"
+    },
+    "contributing": {
+        "donate": {
+        }
+    },
+    "category": "energy",
+    "tags": {
+        "en": [
+            "Charging",
+            "EV",
+            "Electric car"
+        ],
+        "nl": [
+            "Laadpaal",
+            "Laden",
+            "EV",
+            "Elektrische auto"
+        ]
+    },
+    "images": {
+        "large": "/assets/images/large.png",
+        "small": "/assets/images/small.png"
+    },
+    "description": {
+        "en": "Support for EV charging points.",
+        "nl": "Ondersteuning voor EV laadpunten"
+    },
+    "capabilities": {
+        "connectors": {
+            "type": "number",
+            "title": {
+                "en": "Connectors",
+                "nl": "Aansluitingen"
+            },
+            "getable": true,
+            "setable": false,
+            "units": {
+                "en": ""
+            },
+            "min": 0,
+            "max": 30,
+            "step": 1
+        },
+        "occupied": {
+            "type": "boolean",
+            "title": {
+                "en": "Occupied",
+                "nl": "Bezet"
+            },
+            "getable": true,
+            "setable": false,
+            "icon": "/assets/connector.svg"
+        },
+        "alarm_online": {
+            "type": "boolean",
+            "title": {
+                "en": "Offline",
+                "nl": "Offline"
+            },
+            "getable": true,
+            "setable": false,
+            "icon": "/assets/health.svg"
+        },
+        "power": {
+            "type": "number",
+            "title": {
+                "en": "Power",
+                "nl": "Vermogen"
+            },
+            "getable": true,
+            "setable": false,
+            "units": {
+                "en": "Watt"
+            },
+            "min": 0,
+            "max": 100000,
+            "icon": "/assets/power.svg"
+        }
+    },
+    "drivers": [
+        {
+            "id": "chargepoint",
+            "name": {
+                "en": "Charge point",
+                "nl": "Laadpunt"
+            },
+            "images": {
+                "large": "/drivers/chargepoint/assets/images/large.png",
+                "small": "/drivers/chargepoint/assets/images/small.png"
+            },
+            "class": "socket",
+            "capabilities": [ "onoff", "connectors","occupied","power","alarm_online"],
+            "pair": [
+                {
+                    "id": "login",
+                    "template": "login_credentials",
+                    "navigation": {
+                        "next": "list_devices"
+                    },
+                    "logo": "/assets/images/small.png"
+                },
+                {
+                    "id": "list_devices",
+                    "template": "list_devices",
+                    "navigation": {
+                        "next": "add_devices"
+                    }
+                },
+                {
+                    "id": "add_devices",
+                    "template": "add_devices"
+                }
+            ]
+        }
+    ],
+    "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Account settings"
+          },
+          "children": [
+            {
+              "id": "user_email",
+              "type": "text",
+              "label": {
+                "en": "E-mail"
+              },
+              "value": "E-Mail",
+              "hint": {
+                "en": "Your My New Motion account E-Mail"
+              }
+            },
+            {
+              "id": "user_password",
+              "type": "password",
+              "label": {
+                "en": "Your My New Motion password"
+              }
+            }
+          ]
+        }
+    ],
+    "flow": {
+        "triggers": [
+            {
+                "id": "occupied",
+                "title": {
+                    "en": "Chargepoint occupied",
+                    "nl": "Laadpunt bezet"
+                }
+            },
+            {
+                "id": "free",
+                "title": {
+                    "en": "Chargepoint free",
+                    "nl": "Laadpunt vrij"
+                }
+            },
+            {
+                "id": "changed",
+                "title": {
+                    "en": "Charge session ended or started",
+                    "nl": "Laadsessie gestart of beëindigd"
+                },
+                "args": [
+                  {
+                    "name": "Chargepoint",
+                    "type": "device",
+                    "filter": "driver_id=chargepoint"
+                  }
+                ]
+            },
+            {
+                "id": "start",
+                "title": {
+                    "en": "Charge session started",
+                    "nl": "Laadsessie gestart"
+                },
+                "args": [
+                  {
+                    "name": "Chargepoint",
+                    "type": "device",
+                    "filter": "driver_id=chargepoint"
+                  }
+                ]
+            },
+            {
+                "id": "stop",
+                "title": {
+                    "en": "Charge session ended",
+                    "nl": "Laadsessie beëindigd"
+                },
+                "args": [
+                  {
+                    "name": "Chargepoint",
+                    "type": "device",
+                    "filter": "driver_id=chargepoint"
+                  }
+                ]
+            }
+        ]
+    }
+}
