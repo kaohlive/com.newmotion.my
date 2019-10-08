@@ -68,7 +68,7 @@ module.exports.icon = function (point) {
     if (point.e.types.length == 1) return 'plug/' + point.e.types[0].toLowerCase() + '.svg'
 }
 
-module.exports.buildDevice = function (device, point, cards) {
+module.exports.buildDevice = function (device, point) {
 
     device.icon = module.exports.icon(point)
 
@@ -145,23 +145,7 @@ module.exports.buildDevice = function (device, point, cards) {
     device.mobile.components[1].capabilities.push('power.max')
 
     device.mobile.components[1].options.icons['power.max'] = '/assets/power.svg';
-    console.info(cards)
-
-    //device.settings = []
-
-    /*
-    {
-            id: 'chargecard',
-            type: 'dropdown',
-            value: cards[0].rfid,
-            label: {
-                en: 'Chargecard',
-                nl: 'laadpas'
-            },
-            values: []
-        }
-        */
-    console.info(device)
+    
     return device
 }
 
