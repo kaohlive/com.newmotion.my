@@ -59,6 +59,7 @@ class Chargepoint extends Homey.Device {
 
     async updateDevice() {
         const id = this.getData().id
+        const serial = this.getData().serial
         const data = CP.enhance(await MNM(id))
         const prev = this.getStoreValue('cache')
         await this.setStoreValue('cache', data)

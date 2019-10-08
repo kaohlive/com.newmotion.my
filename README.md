@@ -1,5 +1,5 @@
 # My New Motion
-Unofficial app for The New Motion. Adds support for private EV charging points found on https://my.newmotion.com.
+Unofficial app for My New Motion. Adds support for private EV charging points found on https://my.newmotion.com.
 
 This app is inspired on the great work of Jaime Visser's The New motion app
 I rewrote the app to make it work with the private chargers from my.newmotion.com 
