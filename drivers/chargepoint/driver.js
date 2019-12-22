@@ -13,6 +13,7 @@ class ChargepointDriver extends Homey.Driver {
 
     onInit() {
         this._flowTriggerStart = new Homey.FlowCardTriggerDevice('start').register()
+        this._flowTriggerCompleted = new Homey.FlowCardTriggerDevice('completed').register()
         this._flowTriggerStop = new Homey.FlowCardTriggerDevice('stop').register()
         this._flowTriggerChanged = new Homey.FlowCardTriggerDevice('changed').register()
         this._flowTriggerOccupied = new Homey.FlowCardTrigger('occupied').register()
@@ -69,6 +70,13 @@ class ChargepointDriver extends Homey.Driver {
 
     triggerStop(device) {
         this._flowTriggerStop
+            .trigger(device, {}, {})
+            .then(this.log)
+            .catch(this.error)
+    }
+
+    triggerCompleted(device) {
+        this._flowTriggerCompleted
             .trigger(device, {}, {})
             .then(this.log)
             .catch(this.error)
