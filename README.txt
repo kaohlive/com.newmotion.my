@@ -17,7 +17,3 @@ Make sure you have a my new motion account with one chargepoint and one card con
 ## Supported devices
     * Private new motion charge points
 
-## Changelog
-
-### 2.0.0
-* First release for new my.newmotion.com api's and private chargepoints
