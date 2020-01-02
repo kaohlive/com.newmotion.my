@@ -14,7 +14,8 @@ class Chargepoint extends Homey.Device {
             chargecard: cards[0].rfid,
           })
     
-        this._driver = this.getDriver();
+        this._driver = this.getDriver()
+        //CP.addMeasurePowerCurrent(this)
         this.updateDevice()
         this.start_update_loop()
     }
@@ -58,6 +59,7 @@ class Chargepoint extends Homey.Device {
     }
 
     async updateDevice() {
+        const settings = this.getSettings()
         const id = this.getData().id
         const serial = this.getData().serial
         const data = CP.enhance(await MNM(id))
@@ -77,6 +79,11 @@ class Chargepoint extends Homey.Device {
                     this._driver.triggerStop( this, {}, {} );
                 });
             }
+            if(prev.e.occupied < data.e.occupied) {
+                this._driver.ready(() => {
+                    this._driver.triggerCompleted( this, {}, {} );
+                });
+            }
 
             if (data.e.free == 0) {
                 this._driver.triggerOccupied(this)
@@ -90,7 +97,14 @@ class Chargepoint extends Homey.Device {
         this.setIfHasCapability('occupied', (data.e.free == 0))
         this.setIfHasCapability('connectors.total', data.e.total)
         this.setIfHasCapability('connectors.free', data.e.free)
-        this.setIfHasCapability('power.max', data.e.availablepower)
+        if(data.e.availablepower>0)
+            this.setIfHasCapability('power.max', (data.e.availablepower/1000))
+        else
+            this.setIfHasCapability('power.max', 0)
+
+        if(settings.charge_capacity>0)
+            this.setIfHasCapability('measure_power.current', (this.getSettings().charge_capacity*1000))
+
         console.info('device updated')
     }
 
@@ -100,5 +114,7 @@ class Chargepoint extends Homey.Device {
         }
     }
 }
+
+
 
 module.exports = Chargepoint

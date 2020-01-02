@@ -3,10 +3,6 @@
 const max = Math.max
 const round = Math.round
 
-// evse.status = 'available'
-// evse.status = 'charging'
-// evse.status = 'occupied'
-
 module.exports = {}
 
 module.exports.enhance = function (data) {
@@ -19,14 +15,24 @@ module.exports.enhance = function (data) {
     let availableEvses = data._embedded.evses.filter((evse) => evse.status == 'available')
     availableEvses.forEach((evse) => { totalFree += evse.connectors.length })
     data.e.free = totalFree
+    let totalCharging = 0
+    let chargingEvses = data._embedded.evses.filter((evse) => evse.status == 'charging')
+    chargingEvses.forEach((evse) => { totalCharging += evse.connectors.length })
+    data.e.charging = totalCharging
+    let totalOccupied = 0
+    let occupiedEvses = data._embedded.evses.filter((evse) => evse.status == 'occupied')
+    occupiedEvses.forEach((evse) => { totalOccupied += evse.connectors.length })
+    data.e.occupied = totalOccupied
+
     data.e.price = 0
 
+    //Calculate the available power the chargepoint can give based on the connector max times the available connectors
     if (data.e.free > 0)
-        data.e.availablepower = availableEvses[0].maxPower
+        data.e.availablepower = (availableEvses[0].maxPower*data.e.free)
     else   
         data.e.availablepower = 0
-
-    data.e.maxpower = data._embedded.evses[0].maxPower
+    //The Maximum of power the charge point can give is the max per connector times the amount of connectors
+    data.e.maxpower = (data._embedded.evses[0].maxPower*data.e.total)
 
     data.e.types = []
     data._embedded.evses.forEach((evse) => { 
@@ -68,6 +74,17 @@ module.exports.icon = function (point) {
     if (point.e.types.length == 1) return 'plug/' + point.e.types[0].toLowerCase() + '.svg'
 }
 
+module.exports.addMeasurePowerCurrent = function (device) {
+    device.capabilities.push('measure_power.current')
+    device.capabilitiesOptions['measure_power.current'] = {
+        "title": {
+            "en": "Estimated usage in W",
+            "nl": "Geschat verbruik in W"
+          },
+          'preventInsights': false
+    }
+}
+
 module.exports.buildDevice = function (device, point) {
 
     device.icon = module.exports.icon(point)
@@ -90,6 +107,8 @@ module.exports.buildDevice = function (device, point) {
             }
         ]
     }
+
+    module.exports.addMeasurePowerCurrent(device)
 
     device.capabilities.push('alarm_online')
     device.capabilitiesOptions['alarm_online'] = {

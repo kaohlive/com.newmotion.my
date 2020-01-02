@@ -4,7 +4,7 @@
         "en": "My New Motion"
     },
     "sdk": 2,
-    "version": "2.0.1",
+    "version": "2.1.0",
     "compatibility": ">=1.5.0",
     "permissions": [
         "homey:manager:geolocation"
@@ -36,8 +36,8 @@
         "small": "/assets/images/small.png"
     },
     "description": {
-        "en": "Support for EV charging points.",
-        "nl": "Ondersteuning voor EV laadpunten"
+        "en": "Support for private new motion charging points.",
+        "nl": "Ondersteuning voor private new motion laadpunten"
     },
     "capabilities": {
         "connectors": {
@@ -75,6 +75,36 @@
             "setable": false,
             "icon": "/assets/health.svg"
         },
+        "measure_power": {
+            "type": "number",
+            "title": {
+              "en": "Usage",
+              "nl": "Verbruik"
+            },
+            "units": {
+              "en": "W"
+            },
+            "insights": true,
+            "desc": {
+              "en": "Usage in Watt (W)",
+              "nl": "Verbruik in Watt (W)"
+            },
+            "options": {
+              "isApproximated": {
+                "type": "boolean",
+                "default": true,
+                "desc": {
+                  "en": "This flag is used to determine that the device itself has no power measurement functionality, but that the driver calculates the energy use."
+                }
+              }
+            },
+            "chartType": "stepLine",
+            "decimals": 0,
+            "getable": true,
+            "setable": false,
+            "uiComponent": "sensor",
+            "icon": "/assets/power.svg"
+        },
         "power": {
             "type": "number",
             "title": {
@@ -84,10 +114,10 @@
             "getable": true,
             "setable": false,
             "units": {
-                "en": "Watt"
+                "en": "KWh"
             },
             "min": 0,
-            "max": 100000,
+            "max": 100,
             "icon": "/assets/power.svg"
         }
     },
@@ -103,7 +133,7 @@
                 "small": "/drivers/chargepoint/assets/images/small.png"
             },
             "class": "socket",
-            "capabilities": [ "onoff", "connectors","occupied","power","alarm_online"],
+            "capabilities": [],
             "pair": [
                 {
                     "id": "login",
@@ -124,7 +154,26 @@
                     "id": "add_devices",
                     "template": "add_devices"
                 }
-            ]
+            ],
+            "settings": [
+                {
+                    "type": "group",
+                    "label": {
+                        "en": "Car settings",
+                        "nl": "Auto instellingen"
+                    },
+                    "children": [
+                    {
+                            "id": "charge_capacity",
+                            "type": "number",
+                            "label": {
+                              "en": "Charge capacity (KWh)",
+                              "nl": "Laad vermogen (KWh)"
+                            },
+                            "value": 3.7,
+                            "min": 0
+                    }]
+                }]
         }
     ],
     "settings": [
@@ -198,6 +247,20 @@
                     "filter": "driver_id=chargepoint"
                   }
                 ]
+            },
+            {
+              "id": "completed",
+              "title": {
+                  "en": "Charge session completed",
+                  "nl": "Laadsessie afgerond"
+              },
+              "args": [
+                {
+                  "name": "Chargepoint",
+                  "type": "device",
+                  "filter": "driver_id=chargepoint"
+                }
+              ]
             },
             {
                 "id": "stop",
