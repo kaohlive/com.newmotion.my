@@ -1,5 +1,8 @@
 {
   "2.1.0": {
     "en": "Added more detailed flow events and base support for homey 3.0 power management. "
+  },
+  "2.1.1": {
+    "en": "Update artwork to fit the app better and new app logo"
   }
 }

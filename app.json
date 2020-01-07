@@ -4,7 +4,8 @@
         "en": "My New Motion"
     },
     "sdk": 2,
-    "version": "2.1.0",
+    "brandColor": "#000000",
+    "version": "2.1.1",
     "compatibility": ">=1.5.0",
     "permissions": [
         "homey:manager:geolocation"
