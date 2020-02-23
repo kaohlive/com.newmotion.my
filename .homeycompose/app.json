@@ -5,7 +5,7 @@
   },
   "sdk": 2,
   "brandColor": "#000000",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "compatibility": ">=1.5.0",
   "permissions": [
     "homey:manager:geolocation"

@@ -10,5 +10,8 @@
   },
   "2.2.1": {
     "en": "Removed card rfid from logging to ensure privacy"
+  },
+  "2.2.2": {
+    "en": "Improved the new device wizard, allowing to select your charge card per charge point and to select what car you attach to that charge point. Next more logging and error handling on adding devices (if you still have problems please submit the log for review, disclaimer; the chargepoint might reveal a address).It now can show power consumption, but you still have to set a manual value for the cars charge capability on your charger. Fine tuned the flow cards so that you have more detailed triggers to work with. Improved account security so your password does not get stored in the cloud backup of homey if you enable that."
   }
 }
