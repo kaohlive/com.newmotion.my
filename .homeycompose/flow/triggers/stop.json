@@ -1,0 +1,14 @@
+{
+  "id": "stop",
+  "title": {
+    "en": "Connector disconnected",
+    "nl": "Connector ontkoppelt"
+  },
+  "args": [
+    {
+      "name": "Chargepoint",
+      "type": "device",
+      "filter": "driver_id=chargepoint"
+    }
+  ]
+}

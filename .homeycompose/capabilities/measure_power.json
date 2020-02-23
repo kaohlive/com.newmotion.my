@@ -1,0 +1,30 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Usage",
+    "nl": "Verbruik"
+  },
+  "units": {
+    "en": "W"
+  },
+  "insights": true,
+  "desc": {
+    "en": "Usage in Watt (W)",
+    "nl": "Verbruik in Watt (W)"
+  },
+  "options": {
+    "isApproximated": {
+      "type": "boolean",
+      "default": false,
+      "desc": {
+        "en": "This flag is used to determine that the device itself has no power measurement functionality, but that the driver calculates the energy use."
+      }
+    }
+  },
+  "chartType": "stepLine",
+  "decimals": 0,
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/power.svg"
+}

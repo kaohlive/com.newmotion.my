@@ -73,16 +73,16 @@ module.exports.icon = function (point) {
     if (point.e.types.length == 1) return 'plug/' + point.e.types[0].toLowerCase() + '.svg'
 }
 
-module.exports.addMeasurePowerCurrent = function (device) {
-    device.capabilities.push('measure_power.current')
-    device.capabilitiesOptions['measure_power.current'] = {
-        "title": {
-            "en": "Estimated usage in W",
-            "nl": "Geschat verbruik in W"
-          },
-          'preventInsights': false
-    }
-}
+// module.exports.addMeasurePowerCurrent = function (device) {
+//     device.capabilities.push('measure_power.current')
+//     device.capabilitiesOptions['measure_power.current'] = {
+//         "title": {
+//             "en": "Estimated usage in W",
+//             "nl": "Geschat verbruik in W"
+//           },
+//           'preventInsights': false
+//     }
+// }
 
 module.exports.buildDevice = function (device, point) {
     device.icon = module.exports.icon(point)
@@ -106,12 +106,13 @@ module.exports.buildDevice = function (device, point) {
         ]
     }
 
-    module.exports.addMeasurePowerCurrent(device)
+    // module.exports.addMeasurePowerCurrent(device)
 
     device.capabilities.push('alarm_online')
     device.capabilitiesOptions['alarm_online'] = {
         'title': {
-            'en': 'Is offline'
+            'en': 'Offline alarm',
+            'nl': 'Offline alarm'
         }
     }
 
@@ -119,12 +120,11 @@ module.exports.buildDevice = function (device, point) {
         device.capabilities.push('onoff')
 
     if (point._embedded.evses[0].connectors.length == 1) {
+        //We show the occupied and charging state if its a single connector chargepoint
         device.capabilities.push('occupied')
-
-        device.mobile.components[1].capabilities.push('occupied')
-        device.mobile.components[1].options.icons['occupied'] = firstplug
-
+        device.capabilities.push('charging')
     } else {
+        //So these only show up if we have more than 1 connector on the charge point
         device.capabilities.push('connectors.free')
         device.capabilities.push('connectors.total')
 
@@ -142,16 +142,10 @@ module.exports.buildDevice = function (device, point) {
             },
             'preventInsights': true
         }
-
-        device.mobile.components[1].capabilities.push('connectors.free')
-        device.mobile.components[1].capabilities.push('connectors.total')
-
-        device.mobile.components[1].options.icons['connectors.free'] = firstplug
-        device.mobile.components[1].options.icons['connectors.total'] = firstplug
     }
-
+    //Add the power capabilities
+    device.capabilities.push('measure_power')
     device.capabilities.push('power.max')
-
     device.capabilitiesOptions['power.max'] = {
         'title': {
             'en': 'Power available',
@@ -159,10 +153,6 @@ module.exports.buildDevice = function (device, point) {
         }
     }
 
-    device.mobile.components[1].capabilities.push('power.max')
-
-    device.mobile.components[1].options.icons['power.max'] = '/assets/power.svg';
-            
     return device;
 }
 

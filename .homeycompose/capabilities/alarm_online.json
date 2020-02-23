@@ -1,0 +1,10 @@
+{
+  "type": "boolean",
+  "title": {
+    "en": "Offline",
+    "nl": "Offline"
+  },
+  "getable": true,
+  "setable": false,
+  "icon": "/assets/health.svg"
+}

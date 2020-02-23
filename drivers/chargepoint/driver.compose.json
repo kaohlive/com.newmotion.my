@@ -1,0 +1,82 @@
+{
+  "id": "chargepoint",
+  "name": {
+    "en": "Charge point",
+    "nl": "Laadpunt"
+  },
+  "images": {
+    "large": "/drivers/chargepoint/assets/images/large.png",
+    "small": "/drivers/chargepoint/assets/images/small.png"
+  },
+  "class": "socket",
+  "capabilities": [],
+  "pair": [
+    {
+      "id": "login"
+    },
+    {
+      "id": "discover_chargepoints",
+      "template": "loading",
+      "navigation": {
+        "next": "list_devices"
+      }
+    },
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": {
+        "next": "device_settings"
+      },
+      "options": {
+        "singular": true
+      }
+    },
+    {
+      "id": "device_settings"
+    },
+    {
+      "id": "error"
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ],
+  "settings": [
+    {
+      "type": "group",
+      "label": {
+        "en": "Car settings",
+        "nl": "Auto instellingen"
+      },
+      "children": [
+        {
+          "id": "charge_capacity",
+          "type": "number",
+          "label": {
+            "en": "Charge capacity (kW)",
+            "nl": "Laad vermogen (kW)"
+          },
+          "value": 3.3,
+          "min": 0
+        },
+        {
+          "id": "connected_car",
+          "type": "label",
+          "label": {
+            "en": "Connected car",
+            "nl": "Verbonden auto"
+          }
+        },
+        {
+          "id": "charge_card",
+          "type": "label",
+          "label": {
+            "en": "Attached charge card",
+            "nl": "Gekoppelde laad pas"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "start",
+  "title": {
+    "en": "Connector connected",
+    "nl": "Verbinding met connector"
+  },
+  "args": [
+    {
+      "name": "Chargepoint",
+      "type": "device",
+      "filter": "driver_id=chargepoint"
+    }
+  ]
+}

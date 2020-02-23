@@ -1,0 +1,14 @@
+{
+  "id": "free",
+  "title": {
+    "en": "Chargepoint available",
+    "nl": "Laadpunt beschikbaar"
+  },
+  "args": [
+    {
+      "name": "Chargepoint",
+      "type": "device",
+      "filter": "driver_id=chargepoint"
+    }
+  ]
+}

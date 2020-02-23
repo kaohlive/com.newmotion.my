@@ -62,39 +62,59 @@ class Chargepoint extends Homey.Device {
         const serial = this.getData().serial
         
         const data = CP.enhance(await MNM(id, await MNM.getAuthCookie()))
-        console.log(JSON.stringify(data));
+        //console.log(JSON.stringify(data));
         const prev = this.getStoreValue('cache')
         await this.setStoreValue('cache', data)
         if (prev.e.free !== null && prev.e.free !== data.e.free) {
             this._driver.ready(() => {
                 this._driver.triggerChanged( this, {}, {} );
             });
-
+            //A connector become occupied
             if (prev.e.free > data.e.free) {
                 this._driver.ready(() => {
+                    console.log('Trigger start event, a free connector is no more.');
                     this._driver.triggerStart( this, {}, {} );
                 });
-            } else if (prev.e.free < data.e.free) {
+            } else if (prev.e.free<prev.e.total && data.e.total == data.e.free) {
                 this._driver.ready(() => {
+                    console.log('Trigger stop event, all connectors are now free.');
                     this._driver.triggerStop( this, {}, {} );
                 });
             }
-            if(prev.e.occupied < data.e.occupied) {
+            //A connector has stopped charging
+            if(prev.e.charging > data.e.charging) {
                 this._driver.ready(() => {
+                    console.log('Trigger charging completed event, a connector is no longer charging.');
                     this._driver.triggerCompleted( this, {}, {} );
                 });
             }
-
-            if (data.e.free == 0) {
-                this._driver.triggerOccupied(this)
-            } else if (data.e.free > 0) {
-                this._driver.triggerFree(this)
+            //A connector has started charging
+            if(prev.e.charging < data.e.charging) {
+                this._driver.ready(() => {
+                    console.log('Trigger charging started event, a connector is now charging.');
+                    this._driver.triggerCharging( this, {}, {} );
+                });
+            }
+            //So a connector became available
+            if(prev.e.free < data.e.free) {
+                this._driver.ready(() => {
+                    console.log('Trigger connector free event, a connector is now free.');
+                    this._driver.triggerFree( this, {}, {} );
+                });
+            }
+            //So the chargepoint is now fully occupied
+            if (prev.e.free > 0 &&  data.e.free == 0) {
+                this._driver.ready(() => {
+                    console.log('Trigger occupied event, all connectors are occupied.');
+                    this._driver.triggerOccupied( this, {}, {} );
+                });
             }
         }
 
         this.setIfHasCapability('alarm_online',!data.latestOnlineStatus.online)
         this.setIfHasCapability('onoff', (data.e.free == 0))
         this.setIfHasCapability('occupied', (data.e.free == 0))
+        this.setIfHasCapability('charging', (data.e.charging > 0))
         this.setIfHasCapability('connectors.total', data.e.total)
         this.setIfHasCapability('connectors.free', data.e.free)
         if(data.e.availablepower>0)
@@ -102,8 +122,13 @@ class Chargepoint extends Homey.Device {
         else
             this.setIfHasCapability('power.max', 0)
 
-        if(settings.charge_capacity>0)
-            this.setIfHasCapability('measure_power.current', (this.getSettings().charge_capacity*1000))
+        if(settings.charge_capacity>0 && data.e.charging > 0) {
+            // this.setIfHasCapability('measure_power.current', (this.getSettings().charge_capacity*1000))
+            this.setIfHasCapability('measure_power', (this.getSettings().charge_capacity*1000))
+        } else {
+            // this.setIfHasCapability('measure_power.current', 1)
+            this.setIfHasCapability('measure_power', 1)
+        }
 
         console.info('device updated')
     }
@@ -111,6 +136,10 @@ class Chargepoint extends Homey.Device {
     setIfHasCapability(cap, value) {
         if (this.hasCapability(cap)) {
             return this.setCapabilityValue(cap, value).catch(this.error)
+        }
+        else
+        {
+            //console.log('Attempt to set cap ['+cap+'] not available');
         }
     }
 }

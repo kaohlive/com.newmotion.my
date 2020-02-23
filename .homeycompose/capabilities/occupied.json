@@ -1,0 +1,10 @@
+{
+  "type": "boolean",
+  "title": {
+    "en": "Occupied",
+    "nl": "Bezet"
+  },
+  "getable": true,
+  "setable": false,
+  "icon": "/assets/connector.svg"
+}

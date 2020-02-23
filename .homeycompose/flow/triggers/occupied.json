@@ -1,0 +1,14 @@
+{
+  "id": "occupied",
+  "title": {
+    "en": "Chargepoint occupied",
+    "nl": "Laadpunt bezet"
+  },
+  "args": [
+    {
+      "name": "Chargepoint",
+      "type": "device",
+      "filter": "driver_id=chargepoint"
+    }
+  ]
+}

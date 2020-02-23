@@ -1,0 +1,14 @@
+{
+  "id": "changed",
+  "title": {
+    "en": "Charge session ended or started",
+    "nl": "Laadsessie gestart of beëindigd"
+  },
+  "args": [
+    {
+      "name": "Chargepoint",
+      "type": "device",
+      "filter": "driver_id=chargepoint"
+    }
+  ]
+}

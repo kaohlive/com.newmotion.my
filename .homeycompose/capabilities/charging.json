@@ -1,0 +1,10 @@
+{
+  "type": "boolean",
+  "title": {
+    "en": "Charging",
+    "nl": "Laden"
+  },
+  "getable": true,
+  "setable": false,
+  "icon": "/assets/connector.svg"
+}

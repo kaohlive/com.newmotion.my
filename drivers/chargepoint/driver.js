@@ -14,10 +14,11 @@ class ChargepointDriver extends Homey.Driver {
     onInit() {
         this._flowTriggerStart = new Homey.FlowCardTriggerDevice('start').register()
         this._flowTriggerCompleted = new Homey.FlowCardTriggerDevice('completed').register()
+        this._flowTriggerCharging = new Homey.FlowCardTriggerDevice('charging').register()
         this._flowTriggerStop = new Homey.FlowCardTriggerDevice('stop').register()
         this._flowTriggerChanged = new Homey.FlowCardTriggerDevice('changed').register()
-        this._flowTriggerOccupied = new Homey.FlowCardTrigger('occupied').register()
-        this._flowTriggerFree = new Homey.FlowCardTrigger('free').register()
+        this._flowTriggerOccupied = new Homey.FlowCardTriggerDevice('occupied').register()
+        this._flowTriggerFree = new Homey.FlowCardTriggerDevice('free').register()
     }
 
     onPair( socket ) {
@@ -142,7 +143,7 @@ class ChargepointDriver extends Homey.Driver {
             socket.showView('add_devices');
             if(data.length>0)
                 console.log('chargepoint ['+data[0].name+'] added');
-            esle
+            else
                 console.log('no chargepoint added');
       	});
 
@@ -177,16 +178,22 @@ class ChargepointDriver extends Homey.Driver {
             .catch(this.error)
     }
 
-    triggerOccupied() {
+    triggerOccupied(device) {
         this._flowTriggerOccupied
-            .trigger()
+            .trigger(device, {}, {})
+            .then(this.log)
+            .catch(this.error)
+    }
+    triggerCharging(device){
+        this._flowTriggerCharging
+            .trigger(device, {}, {})
             .then(this.log)
             .catch(this.error)
     }
 
-    triggerFree() {
+    triggerFree(device) {
         this._flowTriggerFree
-            .trigger()
+            .trigger(device, {}, {})
             .then(this.log)
             .catch(this.error)
     }

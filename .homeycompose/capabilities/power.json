@@ -1,0 +1,15 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Power",
+    "nl": "Vermogen"
+  },
+  "getable": true,
+  "setable": false,
+  "units": {
+    "en": "kW"
+  },
+  "min": 0,
+  "max": 100,
+  "icon": "/assets/power.svg"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "charging",
+  "title": {
+    "en": "Charge session started",
+    "nl": "Laadsessie begonnen"
+  },
+  "args": [
+    {
+      "name": "Chargepoint",
+      "type": "device",
+      "filter": "driver_id=chargepoint"
+    }
+  ]
+}
