@@ -62,7 +62,6 @@ module.exports.enhance = function (data) {
             console.info(data.e.bytype[type])
         })
     }
-
     return data
 }
 
@@ -86,7 +85,6 @@ module.exports.addMeasurePowerCurrent = function (device) {
 }
 
 module.exports.buildDevice = function (device, point) {
-
     device.icon = module.exports.icon(point)
 
     const firstplug = '/drivers/chargepoint/assets/plug/' + point.e.types[0].toLowerCase() + '.svg'
@@ -164,7 +162,7 @@ module.exports.buildDevice = function (device, point) {
     device.mobile.components[1].capabilities.push('power.max')
 
     device.mobile.components[1].options.icons['power.max'] = '/assets/power.svg';
-    
-    return device
+            
+    return device;
 }
 

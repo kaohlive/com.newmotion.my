@@ -25,12 +25,11 @@
         </div>
         <div class="field row">
             <label for="password">Password</label>
-            <input id="password" type="password" value="" />
+            <input id="password" type="password" value=""  />
         </div>
 
     </fieldset>
 
-    <button id="save" class="right">Save changes</button>
 
     <script type="text/javascript">
 
@@ -42,7 +41,7 @@
 
         var usernameElement = document.getElementById('username');
         var passwordElement = document.getElementById('password');
-        var saveElement = document.getElementById('save');
+        var closeElement = document.getElementById('close');
 
         Homey.get('user_email', function( err, username ) {
            if( err ) return Homey.alert( err );
@@ -54,16 +53,6 @@
            passwordElement.value = password;
         });
 
-        saveElement.addEventListener('click', function(e) {
-
-            Homey.set('user_email', usernameElement.value, function( err ){
-                if( err ) return Homey.alert( err );
-            });
-            Homey.set('user_password', passwordElement.value, function( err ){
-                if( err ) return Homey.alert( err );
-            });
-
-        });
     }
     </script>
 

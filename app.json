@@ -137,19 +137,30 @@
             "capabilities": [],
             "pair": [
                 {
-                    "id": "login",
-                    "template": "login_credentials",
-                    "navigation": {
-                        "next": "list_devices"
-                    },
-                    "logo": "/assets/images/small.png"
+                    "id": "login"
+                },
+                {
+                  "id": "discover_chargepoints",
+                  "template": "loading",
+                  "navigation": {
+                      "next": "list_devices"
+                  }
                 },
                 {
                     "id": "list_devices",
                     "template": "list_devices",
                     "navigation": {
-                        "next": "add_devices"
+                        "next": "device_settings"
+                    },
+                    "options": {
+                      "singular": true
                     }
+                },
+                {
+                    "id": "device_settings"
+                },
+                {
+                  "id": "error"
                 },
                 {
                     "id": "add_devices",
@@ -165,15 +176,32 @@
                     },
                     "children": [
                     {
-                            "id": "charge_capacity",
-                            "type": "number",
-                            "label": {
-                              "en": "Charge capacity (KWh)",
-                              "nl": "Laad vermogen (KWh)"
-                            },
-                            "value": 3.7,
-                            "min": 0
-                    }]
+                      "id": "charge_capacity",
+                      "type": "number",
+                      "label": {
+                        "en": "Charge capacity (kW)",
+                        "nl": "Laad vermogen (kW)"
+                      },
+                      "value": 3.3,
+                      "min": 0
+                    },
+                    {
+                      "id": "connected_car",
+                      "type": "label",
+                      "label": {
+                        "en": "Connected car",
+                        "nl": "Verbonden auto"
+                      }
+                    },
+                    {
+                      "id": "charge_card",
+                      "type": "label",
+                      "label": {
+                        "en": "Attached charge card",
+                        "nl": "Gekoppelde laad pas"
+                      }
+                    }
+                  ]
                 }]
         }
     ],

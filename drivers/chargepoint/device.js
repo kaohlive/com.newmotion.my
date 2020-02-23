@@ -8,12 +8,10 @@ class Chargepoint extends Homey.Device {
     async onInit() {
         // register a capability listener
         this.registerCapabilityListener('onoff', this.onCapabilityOnoff.bind(this))
-        let cards = await MNM.cards(await MNM.getAuthCookie())
         this.setSettings({
-            // only provide keys for the settings you want to change
-            chargecard: cards[0].rfid,
-          })
-    
+            charge_card:this.getData().deviceSettings.card.name,
+            connected_car:this.getData().deviceSettings.car.name
+        })
         this._driver = this.getDriver()
         //CP.addMeasurePowerCurrent(this)
         this.updateDevice()
@@ -27,7 +25,7 @@ class Chargepoint extends Homey.Device {
         console.info('turn charging '+value)
         if(value)
         {
-            await MNM.startSession(this.getData().id,this.getSettings().chargecard)
+            await MNM.startSession(this.getData().id,this.getData().deviceSettings.card.rfid)
             await this.delay(10000)
         }
         else
@@ -62,7 +60,9 @@ class Chargepoint extends Homey.Device {
         const settings = this.getSettings()
         const id = this.getData().id
         const serial = this.getData().serial
-        const data = CP.enhance(await MNM(id))
+        
+        const data = CP.enhance(await MNM(id, await MNM.getAuthCookie()))
+        console.log(JSON.stringify(data));
         const prev = this.getStoreValue('cache')
         await this.setStoreValue('cache', data)
         if (prev.e.free !== null && prev.e.free !== data.e.free) {
