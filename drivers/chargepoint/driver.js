@@ -12,13 +12,27 @@ function mobile() {
 class ChargepointDriver extends Homey.Driver {
 
     onInit() {
-        this._flowTriggerStart = new Homey.FlowCardTriggerDevice('start').register()
-        this._flowTriggerCompleted = new Homey.FlowCardTriggerDevice('completed').register()
-        this._flowTriggerCharging = new Homey.FlowCardTriggerDevice('charging').register()
-        this._flowTriggerStop = new Homey.FlowCardTriggerDevice('stop').register()
-        this._flowTriggerChanged = new Homey.FlowCardTriggerDevice('changed').register()
-        this._flowTriggerOccupied = new Homey.FlowCardTriggerDevice('occupied').register()
-        this._flowTriggerFree = new Homey.FlowCardTriggerDevice('free').register()
+        this._flowTriggerStart = new Homey.FlowCardTriggerDevice('start').registerRunListener(( args, state ) => {
+			return Promise.resolve( true );
+		  }).register()
+        this._flowTriggerCompleted = new Homey.FlowCardTriggerDevice('completed').registerRunListener(( args, state ) => {
+			return Promise.resolve( true );
+		  }).register()
+        this._flowTriggerCharging = new Homey.FlowCardTriggerDevice('charging').registerRunListener(( args, state ) => {
+			return Promise.resolve( true );
+		  }).register()
+        this._flowTriggerStop = new Homey.FlowCardTriggerDevice('stop').registerRunListener(( args, state ) => {
+			return Promise.resolve( true );
+		  }).register()
+        this._flowTriggerChanged = new Homey.FlowCardTriggerDevice('changed').registerRunListener(( args, state ) => {
+			return Promise.resolve( true );
+		  }).register()
+        this._flowTriggerOccupied = new Homey.FlowCardTriggerDevice('occupied').registerRunListener(( args, state ) => {
+			return Promise.resolve( true );
+		  }).register()
+        this._flowTriggerFree = new Homey.FlowCardTriggerDevice('free').registerRunListener(( args, state ) => {
+			return Promise.resolve( true );
+		  }).register()
     }
 
     onPair( socket ) {
