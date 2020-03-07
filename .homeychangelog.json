@@ -22,5 +22,8 @@
   },
   "2.2.5": {
     "en": "update homey sdk requirement"
+  },
+  "2.2.6": {
+    "en": "flow card fix"
   }
 }
