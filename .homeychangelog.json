@@ -19,5 +19,8 @@
   },
   "2.2.4": {
     "en": "fix in readme"
+  },
+  "2.2.5": {
+    "en": "update homey sdk requirement"
   }
 }
