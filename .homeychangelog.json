@@ -25,5 +25,8 @@
   },
   "2.2.6": {
     "en": "flow card fix"
+  },
+  "2.2.7": {
+    "en": "fix for the readme"
   }
 }
