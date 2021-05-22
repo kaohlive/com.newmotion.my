@@ -1,25 +1,26 @@
 {
   "id": "com.newmotion.my",
   "name": {
-    "en": "My New Motion"
+    "en": "My New Motion",
+    "nl": "My New Motion"
   },
-  "sdk": 2,
-  "brandColor": "#000000",
-  "version": "2.2.7",
-  "compatibility": ">=3.0.0",
-  "permissions": [
-    "homey:manager:geolocation"
-  ],
+  "sdk": 3,
+  "brandColor": "#353535",
+  "version": "3.0.0",
+  "compatibility": ">=5.0.0",
   "author": {
     "name": "Kaoh",
     "email": "kaoh@kaoh.nl"
   },
+  "homeyCommunityTopicId": 19001,
+  "source": "https://github.com/kaohlive/com.newmotion.my",
   "contributing": {
     "donate": {}
   },
   "category": "energy",
   "tags": {
     "en": [
+      "Chargepoint",
       "Charging",
       "EV",
       "Electric car"
@@ -48,33 +49,5 @@
     "measure_power": {
       "approximated": true
     }
-  },
-  "settings": [
-    {
-      "type": "group",
-      "label": {
-        "en": "Account settings"
-      },
-      "children": [
-        {
-          "id": "user_email",
-          "type": "text",
-          "label": {
-            "en": "E-mail"
-          },
-          "value": "E-Mail",
-          "hint": {
-            "en": "Your My New Motion account E-Mail"
-          }
-        },
-        {
-          "id": "user_password",
-          "type": "password",
-          "label": {
-            "en": "Your My New Motion password"
-          }
-        }
-      ]
-    }
-  ]
+  }
 }

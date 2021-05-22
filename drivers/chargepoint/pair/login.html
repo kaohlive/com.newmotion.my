@@ -26,15 +26,19 @@
 
         saveElement.addEventListener('click', function(e) {
             Homey.showLoadingOverlay();
-            Homey.emit( 'testlogin', {'username':usernameElement.value,'password':passwordElement.value}, function( err, result ){
+            Homey.emit('testlogin', { 'username':usernameElement.value,'password':passwordElement.value }).then(function (result) {
+                console.log('Testcomplete result: '+result);
                 if(result)
+                {
+                    Homey.hideLoadingOverlay();
                     Homey.emit( 'discover_chargepoints', null, function( err, result ){
                         console.log(result); 
                     });
+                }
                 else
                 {
                     Homey.hideLoadingOverlay();
-                    Homey.alert(err);
+                    Homey.alert("Login validation failed, check your credentials and try again");
                 }
             });
         });

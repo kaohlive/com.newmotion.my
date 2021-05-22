@@ -5,6 +5,16 @@ const MNM = require('../../lib/mnm')
 const CP = require('./chargepoint')
 
 class Chargepoint extends Homey.Device {
+
+//getDeviceTriggerCard('start').registerRunListener(async ( args, state ) => {
+//getDeviceTriggerCard('charge_completed').registerRunListener(async ( args, state ) => {
+//getDeviceTriggerCard('charging').registerRunListener(async ( args, state ) => {
+//getDeviceTriggerCard('stop').registerRunListener(async ( args, state ) => {
+//getDeviceTriggerCard('changed').registerRunListener(async ( args, state ) => {
+//getDeviceTriggerCard('occupied').registerRunListener(async ( args, state ) => {
+//getDeviceTriggerCard('free').registerRunListener(async ( args, state ) => {
+
+
     async onInit() {
         // register a capability listener
         this.registerCapabilityListener('onoff', this.onCapabilityOnoff.bind(this))
@@ -12,10 +22,9 @@ class Chargepoint extends Homey.Device {
             charge_card:this.getData().deviceSettings.card.name,
             connected_car:this.getData().deviceSettings.car.name
         })
-        this._driver = this.getDriver()
-        //CP.addMeasurePowerCurrent(this)
         this.updateDevice()
         this.start_update_loop()
+        this.setAvailable();
     }
 
 
@@ -25,12 +34,12 @@ class Chargepoint extends Homey.Device {
         console.info('turn charging '+value)
         if(value)
         {
-            await MNM.startSession(this.getData().id,this.getData().deviceSettings.card.rfid)
+            await MNM.startSession(this.getData().id,this.getData().deviceSettings.card.rfid, this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
             await this.delay(10000)
         }
         else
         {
-            await MNM.stopSession(this.getData().id)
+            await MNM.stopSession(this.getData().id, this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
             await this.delay(4000)
         }
         this.updateDevice()
@@ -61,52 +70,58 @@ class Chargepoint extends Homey.Device {
         const id = this.getData().id
         const serial = this.getData().serial
         
-        const data = CP.enhance(await MNM(id, await MNM.getAuthCookie()))
+        const data = CP.enhance(await MNM(id, await MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))))
         //console.log(JSON.stringify(data));
+        console.debug('get previous status from cache');
         const prev = this.getStoreValue('cache')
+        console.debug('replace cache');
         await this.setStoreValue('cache', data)
+        console.debug('free prev: '+prev.e.free+' new: '+data.e.free)
+        console.debug('total prev: '+prev.e.total +' new: '+data.e.total)
+        console.debug('charging prev: '+prev.e.charging +' new: '+data.e.charging)
         if (prev.e.free !== null && prev.e.free !== data.e.free) {
-            this._driver.ready(() => {
-                this._driver.triggerChanged( this, {}, {} );
+            this.driver.ready().then(() => {
+                console.log('Trigger changed event, something changed.');
+                this.driver.triggerChanged( this, {}, {} );
             });
             //A connector become occupied
             if (prev.e.free > data.e.free) {
-                this._driver.ready(() => {
+                this.driver.ready().then(() => {
                     console.log('Trigger start event, a free connector is no more.');
-                    this._driver.triggerStart( this, {}, {} );
+                    this.driver.triggerStart( this, {}, {} );
                 });
             } else if (prev.e.free<prev.e.total && data.e.total == data.e.free) {
-                this._driver.ready(() => {
+                this.driver.ready().then(() => {
                     console.log('Trigger stop event, all connectors are now free.');
-                    this._driver.triggerStop( this, {}, {} );
+                    this.driver.triggerStop( this, {}, {} );
                 });
             }
             //A connector has stopped charging
             if(prev.e.charging > data.e.charging) {
-                this._driver.ready(() => {
+                this.driver.ready().then(() => {
                     console.log('Trigger charging completed event, a connector is no longer charging.');
-                    this._driver.triggerCompleted( this, {}, {} );
+                    this.driver.triggerCompleted( this, {}, {} );
                 });
             }
             //A connector has started charging
             if(prev.e.charging < data.e.charging) {
-                this._driver.ready(() => {
+                this.driver.ready().then(() => {
                     console.log('Trigger charging started event, a connector is now charging.');
-                    this._driver.triggerCharging( this, {}, {} );
+                    this.driver.triggerCharging( this, {}, {} );
                 });
             }
             //So a connector became available
             if(prev.e.free < data.e.free) {
-                this._driver.ready(() => {
+                this.driver.ready().then(() => {
                     console.log('Trigger connector free event, a connector is now free.');
-                    this._driver.triggerFree( this, {}, {} );
+                    this.driver.triggerFree( this, {}, {} );
                 });
             }
             //So the chargepoint is now fully occupied
             if (prev.e.free > 0 &&  data.e.free == 0) {
-                this._driver.ready(() => {
+                this.driver.ready().then(() => {
                     console.log('Trigger occupied event, all connectors are occupied.');
-                    this._driver.triggerOccupied( this, {}, {} );
+                    this.driver.triggerOccupied( this, {}, {} );
                 });
             }
         }

@@ -3,7 +3,6 @@
 const Homey = require('homey')
 const MNM = require('../../lib/mnm')
 const CP = require('./chargepoint')
-const { ManagerSettings } = require('homey');
 
 function mobile() {
     return
@@ -12,98 +11,101 @@ function mobile() {
 class ChargepointDriver extends Homey.Driver {
 
     onInit() {
-        this._flowTriggerStart = new Homey.FlowCardTriggerDevice('start').registerRunListener(( args, state ) => {
-			return Promise.resolve( true );
-		  }).register()
-        this._flowTriggerCompleted = new Homey.FlowCardTriggerDevice('completed').registerRunListener(( args, state ) => {
-			return Promise.resolve( true );
-		  }).register()
-        this._flowTriggerCharging = new Homey.FlowCardTriggerDevice('charging').registerRunListener(( args, state ) => {
-			return Promise.resolve( true );
-		  }).register()
-        this._flowTriggerStop = new Homey.FlowCardTriggerDevice('stop').registerRunListener(( args, state ) => {
-			return Promise.resolve( true );
-		  }).register()
-        this._flowTriggerChanged = new Homey.FlowCardTriggerDevice('changed').registerRunListener(( args, state ) => {
-			return Promise.resolve( true );
-		  }).register()
-        this._flowTriggerOccupied = new Homey.FlowCardTriggerDevice('occupied').registerRunListener(( args, state ) => {
-			return Promise.resolve( true );
-		  }).register()
-        this._flowTriggerFree = new Homey.FlowCardTriggerDevice('free').registerRunListener(( args, state ) => {
-			return Promise.resolve( true );
-		  }).register()
+        this._flowTriggerStart = this.homey.flow.getDeviceTriggerCard('start').registerRunListener(async ( args, state ) => {
+			return true;
+		  });
+        this._flowTriggerCompleted = this.homey.flow.getDeviceTriggerCard('charge_completed').registerRunListener(async ( args, state ) => {
+			return true;
+		  });
+        this._flowTriggerCharging = this.homey.flow.getDeviceTriggerCard('charging').registerRunListener(async ( args, state ) => {
+			return true;
+		  });
+        this._flowTriggerStop = this.homey.flow.getDeviceTriggerCard('stop').registerRunListener(async ( args, state ) => {
+			return true;
+		  });
+        this._flowTriggerChanged = this.homey.flow.getDeviceTriggerCard('changed').registerRunListener(async ( args, state ) => {
+			return true;
+		  });
+        this._flowTriggerOccupied = this.homey.flow.getDeviceTriggerCard('occupied').registerRunListener(async ( args, state ) => {
+			return true;
+		  });
+        this._flowTriggerFree = this.homey.flow.getDeviceTriggerCard('free').registerRunListener(async ( args, state ) => {
+			return true;
+		  });
+          
     }
 
-    onPair( socket ) {
+   async onPair(session) {
         let mydevices;
 
-        socket.on('showView', (viewId, callback)=>{
+        session.setHandler('showView', async (viewId)=>{
             //These actions send data to the custom views
-            callback();
+            
             if(viewId === 'login') {
                 console.log('Login page of pairing is showing, send credentials');
                 //Send the stored credentials to the 
-                var username = ManagerSettings.get('user_email');
-                var cryptedpassword = ManagerSettings.get('user_password');
+                var username = this.homey.settings.get('user_email');
+                var cryptedpassword = this.homey.settings.get('user_password');
                 require('../../lib/homeycrypt').decrypt(cryptedpassword,username).then(plainpass =>{
-                    socket.emit('loadaccount', {'username': username,'password': plainpass});
+                    session.emit('loadaccount', {'username': username,'password': plainpass});
                 })
             };
             if(viewId === 'device_settings') {
                 console.log('Allow the user to select card and car');
-                MNM.getAuthCookie().then(token => {
+                MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(token => {
                     MNM.cards(token).then(function (cards) {
                         const mycards = cards.map((card) => {
                             return card;
                         });
-                        socket.emit('loadcards', mycards);
+                        session.emit('loadcards', mycards);
                     });
                     MNM.cars(token).then(function (cars) {
                         const mycars = cars.map((car) => {
                             return car;
                         });
-                        socket.emit('loadcars', mycars);
+                        session.emit('loadcars', mycars);
                     });
                 });
             };
         });
 
-        socket.on('testlogin', ( data, callback ) => {
+        session.setHandler('testlogin', async ( data ) => {
             console.log('Test login and provide feedback');
             //Store the provided credentials, but hash and salt it first
-            ManagerSettings.set('user_email',data.username);
+            this.homey.settings.set('user_email',data.username);
             require('../../lib/homeycrypt').crypt(data.password,data.username).then(cryptedpass => {
                 //console.log(JSON.stringify(cryptedpass));
-                ManagerSettings.set('user_password',cryptedpass);
-                //Now we have the encrypted password stored we can start testing the info
-                MNM.getAuthCookie()
-                .then(token => {
-                    if(token==='')
-                    {
-                        console.log('no token recieved, stay here and inform the user');
-                        callback( 'Login failed, no token received', false);
-                    }
-                    else
-                    {
-                        console.log('valid token received, progress to next view');
-                        callback( null, true);
-                    }
-                })
-                .catch(err => {
-                    callback(err);
-                });
+                this.homey.settings.set('user_password',cryptedpass);
+            })                
+            //Now we have the encrypted password stored we can start testing the info
+            MNM.clearAuthCookie();
+            var testresult = await MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+            .then(token => {
+                if(token==='')
+                {
+                    console.log('no token recieved, stay here and inform the user');
+                    return false;
+                }
+                else
+                {
+                    console.log('valid token received, progress to next view');
+                    return true;
+                }
             })
-
-            
+            .catch(err => {
+                console.log(err);
+                return false;
+            })
+            console.log('credential test ok: '+testresult);
+            return testresult;
         });
 
 
-        socket.on('discover_chargepoints', ( data, callback ) => {
+        session.setHandler('discover_chargepoints', async ( data ) => {
             console.log('Now find all our chargepoints from my account');
-            socket.showView('discover_chargepoints');
+            session.showView('discover_chargepoints');
             try{
-            MNM.getAuthCookie()
+            MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
               .then(token => {
                 MNM.list(token)
                     .then(function (points) {
@@ -125,11 +127,11 @@ class ChargepointDriver extends Homey.Driver {
                                     return device;
                                 }catch(err){
                                     console.log(err);
-                                    callback(err, null);
+                                    return err;
                                 }
                             }catch(err){
                                 console.log(err);
-                                callback(err, null);
+                                return err;
                             }
 
                         })
@@ -137,24 +139,24 @@ class ChargepointDriver extends Homey.Driver {
                         //So we are done here, let the user choose
                         //console.log(JSON.stringify(devices));
                         mydevices=devices;
-                        socket.showView('list_devices');
+                        session.showView('list_devices');
                     })
-                    .catch((err) => { console.log('Get chargepoints, '+err); socket.showView('error');})
+                    .catch((err) => { console.log('Get chargepoints, '+err); session.showView('error');})
                 })
-                .catch((err) => { console.log('Get token, '+err); socket.showView('error');})
+                .catch((err) => { console.log('Get token, '+err); session.showView('error');})
             }catch(err){
                 console.log('Generic error:'+err);
-                socket.showView('error');
+                session.showView('error');
             }
         });
 
-        socket.on('list_devices', ( data, callback ) => {
+        session.setHandler('list_devices', async (data) => {
             console.log('Provide user list of chargepoints to choose from.');
-            callback(null, mydevices);
+            return mydevices;
         });
           
-        socket.on('add_devices', ( data, callback ) => {
-            socket.showView('add_devices');
+        session.setHandler('add_devices', async (data) => {
+            session.showView('add_devices');
             if(data.length>0)
                 console.log('chargepoint ['+data[0].name+'] added');
             else
