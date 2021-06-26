@@ -28,5 +28,11 @@
   },
   "2.2.7": {
     "en": "fix for the readme"
+  },
+  "3.0.0": {
+    "en": "Upgraded the app to be compatible with Homey SDK 3"
+  },
+  "3.0.1": {
+    "en": "Attempt to fix login step in some cases returning an error while correct info is provided"
   }
 }

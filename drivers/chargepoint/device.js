@@ -76,14 +76,16 @@ class Chargepoint extends Homey.Device {
         const prev = this.getStoreValue('cache')
         console.debug('replace cache');
         await this.setStoreValue('cache', data)
-        console.debug('free prev: '+prev.e.free+' new: '+data.e.free)
-        console.debug('total prev: '+prev.e.total +' new: '+data.e.total)
-        console.debug('charging prev: '+prev.e.charging +' new: '+data.e.charging)
-        if (prev.e.free !== null && prev.e.free !== data.e.free) {
-            this.driver.ready().then(() => {
-                console.log('Trigger changed event, something changed.');
-                this.driver.triggerChanged( this, {}, {} );
-            });
+        if (prev.e.free !== null) {
+            console.debug('free prev: '+prev.e.free+' new: '+data.e.free)
+            console.debug('total prev: '+prev.e.total +' new: '+data.e.total)
+            console.debug('charging prev: '+prev.e.charging +' new: '+data.e.charging)
+            if(prev.e.free !== data.e.free) {
+                this.driver.ready().then(() => {
+                    console.log('Trigger changed event, something changed.');
+                    this.driver.triggerChanged( this, {}, {} );
+                });
+            }
             //A connector become occupied
             if (prev.e.free > data.e.free) {
                 this.driver.ready().then(() => {
@@ -94,20 +96,6 @@ class Chargepoint extends Homey.Device {
                 this.driver.ready().then(() => {
                     console.log('Trigger stop event, all connectors are now free.');
                     this.driver.triggerStop( this, {}, {} );
-                });
-            }
-            //A connector has stopped charging
-            if(prev.e.charging > data.e.charging) {
-                this.driver.ready().then(() => {
-                    console.log('Trigger charging completed event, a connector is no longer charging.');
-                    this.driver.triggerCompleted( this, {}, {} );
-                });
-            }
-            //A connector has started charging
-            if(prev.e.charging < data.e.charging) {
-                this.driver.ready().then(() => {
-                    console.log('Trigger charging started event, a connector is now charging.');
-                    this.driver.triggerCharging( this, {}, {} );
                 });
             }
             //So a connector became available
@@ -124,6 +112,22 @@ class Chargepoint extends Homey.Device {
                     this.driver.triggerOccupied( this, {}, {} );
                 });
             }
+            //A connector has stopped charging
+            if(prev.e.charging > data.e.charging) {
+                this.driver.ready().then(() => {
+                    console.log('Trigger charging completed event, a connector is no longer charging.');
+                    this.driver.triggerCompleted( this, {}, {} );
+                });
+            }
+            //A connector has started charging
+            if(prev.e.charging < data.e.charging) {
+                this.driver.ready().then(() => {
+                    console.log('Trigger charging started event, a connector is now charging.');
+                    this.driver.triggerCharging( this, {}, {} );
+                });
+            }
+        } else {
+            console.debug('no cahced data available, so no events can be generated')
         }
 
         this.setIfHasCapability('alarm_online',!data.latestOnlineStatus.online)

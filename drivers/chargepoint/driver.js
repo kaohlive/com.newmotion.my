@@ -70,15 +70,17 @@ class ChargepointDriver extends Homey.Driver {
         });
 
         session.setHandler('testlogin', async ( data ) => {
-            console.log('Test login and provide feedback');
+            console.log('Test login and provide feedback, username length: '+data.username.length+' password length: '+data.password.length);
             //Store the provided credentials, but hash and salt it first
             this.homey.settings.set('user_email',data.username);
             require('../../lib/homeycrypt').crypt(data.password,data.username).then(cryptedpass => {
                 //console.log(JSON.stringify(cryptedpass));
                 this.homey.settings.set('user_password',cryptedpass);
-            })                
+            }) 
+            console.log('password encrypted, credentials stored. Clear existing tokens.');               
             //Now we have the encrypted password stored we can start testing the info
             MNM.clearAuthCookie();
+            console.log('Test new credentials and get a fresh token.');               
             var testresult = await MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
             .then(token => {
                 if(token==='')
