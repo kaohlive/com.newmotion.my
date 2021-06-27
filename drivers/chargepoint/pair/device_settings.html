@@ -71,7 +71,7 @@
         Homey.on('loadcars', function(cars, callback){
             cars.forEach(car =>{
                 var option = document.createElement("option");
-            	option.text = car.name+' ('+car.battery+' kWh)';
+            	option.text = car.name+' ('+car.battery+' kW)';
 	            option.value = car.battery;
                 carElement.add(option,null);
             });

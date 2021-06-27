@@ -10,5 +10,25 @@
       "type": "device",
       "filter": "driver_id=chargepoint"
     }
+  ],
+  "tokens": [
+      {
+          "title":{
+              "en": "Connected car",
+              "nl": "Verbonden auto"
+          },
+          "name": "carname",
+          "type": "string",
+          "example": "Polestar"
+      },
+      {
+          "title":{
+              "en": "Active card",
+              "nl": "Actieve kaart"
+          },
+          "name": "cardname",
+          "type": "string",
+          "example": "Newmotion"
+      }
   ]
 }

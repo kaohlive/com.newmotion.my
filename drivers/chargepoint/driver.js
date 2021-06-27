@@ -168,30 +168,30 @@ class ChargepointDriver extends Homey.Driver {
  
     }
 
-    triggerStart(device) {
+    triggerStart(device, tokens, state) {
         this._flowTriggerStart
-            .trigger(device, {}, {})
+            .trigger(device, tokens, state)
             .then(this.log)
             .catch(this.error)
     }
 
-    triggerStop(device) {
+    triggerStop(device, tokens, state) {
         this._flowTriggerStop
-            .trigger(device, {}, {})
+            .trigger(device, tokens, state)
             .then(this.log)
             .catch(this.error)
     }
 
-    triggerCompleted(device) {
+    triggerCompleted(device, tokens, state) {
         this._flowTriggerCompleted
-            .trigger(device, {}, {})
+            .trigger(device, tokens, state)
             .then(this.log)
             .catch(this.error)
     }
 
-    triggerChanged(device) {
+    triggerChanged(device, tokens, state) {
         this._flowTriggerChanged
-            .trigger(device, {}, {})
+            .trigger(device, tokens, state)
             .then(this.log)
             .catch(this.error)
     }
@@ -202,9 +202,9 @@ class ChargepointDriver extends Homey.Driver {
             .then(this.log)
             .catch(this.error)
     }
-    triggerCharging(device){
+    triggerCharging(device, tokens, state){
         this._flowTriggerCharging
-            .trigger(device, {}, {})
+            .trigger(device, tokens, state)
             .then(this.log)
             .catch(this.error)
     }

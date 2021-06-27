@@ -72,8 +72,8 @@
           "id": "charge_card",
           "type": "label",
           "label": {
-            "en": "Attached charge card",
-            "nl": "Gekoppelde laad pas"
+            "en": "Active charge card",
+            "nl": "Actieve laad pas"
           }
         }
       ]

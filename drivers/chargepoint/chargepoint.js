@@ -118,6 +118,9 @@ module.exports.buildDevice = function (device, point) {
 
     if(point._embedded.evses[0].connectors.length>0)
         device.capabilities.push('onoff')
+        device.capabilitiesOptions['onoff'] = {
+            'uiQuickAction': false
+        }
 
     if (point._embedded.evses[0].connectors.length == 1) {
         //We show the occupied and charging state if its a single connector chargepoint

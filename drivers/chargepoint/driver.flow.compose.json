@@ -1,0 +1,125 @@
+{
+  "actions": [
+    {
+      "id": "start_charge_generic",
+      "title": {
+        "en": "Start a charging session using a specific card",
+        "nl": "Start een laad sessie met een specifieke kaart"
+      },
+      "titleFormatted": {
+        "en": "Start a charging session using [[card]] for [[car]] with [[chargespeed]] kWh",
+        "nl": "Start een laad sessie met [[card]] voor [[car]] met [[chargespeed]] kWh"
+      },
+      "hint": {
+        "en": "Start a charge session using card..."
+      },
+      "args": [
+        {
+          "type": "autocomplete",
+          "name": "card",
+          "placeholder": {
+            "en": "Select the charge card"
+          }
+        },
+        {
+          "type": "autocomplete",
+          "name": "car",
+          "placeholder": {
+            "en": "Select the car"
+          }
+        },
+        {
+          "type": "number",
+          "name": "chargespeed",
+          "placeholder": {
+            "en": "Provide the power that the car can pull from this point",
+            "nl": "Geef het vermogen welke de auto uit het laadpunt kan laden"
+          },
+          "unit": "kWh"
+        }
+      ]
+    },
+    {
+      "id": "stop_charge_generic",
+      "title": {
+        "en": "Stop the active charging session",
+        "nl": "Stop de actieve laadsessie"
+      },
+      "hint": {
+        "en": "Stop a active charge session..."
+      }
+    }
+  ],
+  "conditions": [
+    {
+      "id": "charging_state_generic",
+      "title": {
+        "en": "Is there a charge session active for a card and car?",
+        "nl": "Is er een actieve laad sessie met een kaart en auto?"
+      },
+      "titleFormatted": {
+        "en": "!{{Is|Isn't}} there an active session with [[card]] for [[car]]",
+        "nl": "!{{Is er|Is er geen}} een laad sessie actief voor [[card]] en [[car]]"
+      },
+      "hint": {
+        "en": "Active charge sessions..."
+      },
+      "args": [
+        {
+          "type": "autocomplete",
+          "name": "card",
+          "placeholder": {
+            "en": "Using card",
+            "nl": "Met kaart"
+          }
+        },
+        {
+          "type": "autocomplete",
+          "name": "car",
+          "placeholder": {
+            "en": "connected car",
+            "nl": "verbonden auto"
+          }
+        }
+      ]
+    },
+    {
+      "id": "charging_state_card",
+      "title": {
+        "en": "Is there a charge session active for a card?",
+        "nl": "Is er een actieve laad sessie met een kaart?"
+      },
+      "titleFormatted": {
+        "en": "!{{Is|Isn't}} there an active session with [[card]]",
+        "nl": "!{{Is er|Is er geen}} een laad sessie actief voor [[card]]"
+      },
+      "hint": {
+        "en": "Active charge sessions..."
+      },
+      "args": [
+        {
+          "type": "autocomplete",
+          "name": "card",
+          "placeholder": {
+            "en": "Using card",
+            "nl": "Met kaart"
+          }
+        }
+      ]
+    },    
+    {
+      "id": "charging_state",
+      "title": {
+        "en": "Is there a charge session active?",
+        "nl": "Is er een actieve laad sessie?"
+      },
+      "titleFormatted": {
+        "en": "!{{Is|Isn't}} there an active session",
+        "nl": "!{{Is er|Is er geen}} een laad sessie actief"
+      },
+      "hint": {
+        "en": "Active charge sessions..."
+      }
+    }
+  ]
+}
