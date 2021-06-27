@@ -34,5 +34,8 @@
   },
   "3.0.1": {
     "en": "Attempt to fix login step in some cases returning an error while correct info is provided"
+  },
+  "3.1.0": {
+    "en": "Added support for multiple cars and cahrgecards using flow cards, also added tokens on triggers for advanced logging"
   }
 }
