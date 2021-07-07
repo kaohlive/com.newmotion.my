@@ -15,6 +15,7 @@ module.exports.enhance = function (data) {
     let availableEvses = data._embedded.evses.filter((evse) => evse.status == 'available')
     availableEvses.forEach((evse) => { totalFree += evse.connectors.length })
     data.e.free = totalFree
+    data.e.cardname = (data._embedded.evses[0] && data._embedded.evses[0].statusDetails) ? data._embedded.evses[0].statusDetails.printedNumber : ''
     let totalCharging = 0
     let chargingEvses = data._embedded.evses.filter((evse) => evse.status == 'charging')
     chargingEvses.forEach((evse) => { totalCharging += evse.connectors.length })
