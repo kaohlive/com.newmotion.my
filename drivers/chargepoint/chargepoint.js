@@ -127,6 +127,7 @@ module.exports.buildDevice = function (device, point) {
         //We show the occupied and charging state if its a single connector chargepoint
         device.capabilities.push('occupied')
         device.capabilities.push('charging')
+        device.capabilities.push('active_card')
     } else {
         //So these only show up if we have more than 1 connector on the charge point
         device.capabilities.push('connectors.free')

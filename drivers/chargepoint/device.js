@@ -168,6 +168,11 @@ class Chargepoint extends Homey.Device {
         else
             this.setIfHasCapability('power.max', 0)
 
+        if (data.e.charging === data.e.total)
+            this.setIfHasCapability('active_card', data.e.cardname)
+        else
+            this.setIfHasCapability('active_card', null)
+
         if(settings.charge_capacity>0 && data.e.charging > 0) {
             // this.setIfHasCapability('measure_power.current', (this.getSettings().charge_capacity*1000))
             this.setIfHasCapability('measure_power', (this.getSettings().charge_capacity*1000))

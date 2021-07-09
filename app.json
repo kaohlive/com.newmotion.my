@@ -465,6 +465,17 @@
     }
   ],
   "capabilities": {
+    "active_card": {
+      "type": "string",
+      "title": {
+        "en": "Active charge card",
+        "nl": "Actieve laadpas"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/card.svg"
+    },
     "alarm_online": {
       "type": "boolean",
       "title": {
