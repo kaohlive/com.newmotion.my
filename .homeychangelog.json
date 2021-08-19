@@ -40,5 +40,8 @@
   },
   "3.1.1": {
     "en": "Thanks to hansallis a quick fix for the recent issue handling the cookie that resulting in problems with the token."
+  },
+  "3.1.2": {
+    "en": "Attempt to fix the app icon properly"
   }
 }
