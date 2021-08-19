@@ -37,5 +37,8 @@
   },
   "3.1.0": {
     "en": "Added support for multiple cars and cahrgecards using flow cards, also added tokens on triggers for advanced logging"
+  },
+  "3.1.1": {
+    "en": "Thanks to hansallis a quick fix for the recent issue handling the cookie that resulting in problems with the token."
   }
 }
