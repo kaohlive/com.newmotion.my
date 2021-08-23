@@ -125,7 +125,7 @@ class ChargepointDriver extends Homey.Driver {
                                 try{
                                     console.log('building cp ['+enhancedpoint.name+']');
                                     var device=CP.buildDevice(devicedev, enhancedpoint);
-                                    console.log('device build:'+device.name)
+                                    console.log('device built:'+device.name)
                                     return device;
                                 }catch(err){
                                     console.log(err);

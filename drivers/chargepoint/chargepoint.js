@@ -15,6 +15,7 @@ module.exports.enhance = function (data) {
     let availableEvses = data._embedded.evses.filter((evse) => evse.status == 'available')
     availableEvses.forEach((evse) => { totalFree += evse.connectors.length })
     data.e.free = totalFree
+    data.e.cardname = (data._embedded.evses[0] && data._embedded.evses[0].statusDetails) ? data._embedded.evses[0].statusDetails.printedNumber : ''
     let totalCharging = 0
     let chargingEvses = data._embedded.evses.filter((evse) => evse.status == 'charging')
     chargingEvses.forEach((evse) => { totalCharging += evse.connectors.length })
@@ -126,6 +127,7 @@ module.exports.buildDevice = function (device, point) {
         //We show the occupied and charging state if its a single connector chargepoint
         device.capabilities.push('occupied')
         device.capabilities.push('charging')
+        device.capabilities.push('active_card')
     } else {
         //So these only show up if we have more than 1 connector on the charge point
         device.capabilities.push('connectors.free')

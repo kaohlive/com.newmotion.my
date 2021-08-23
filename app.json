@@ -147,8 +147,8 @@
       {
         "id": "occupied",
         "title": {
-          "en": "Chargepoint occupied",
-          "nl": "Laadpunt bezet"
+          "en": "Chargepoint fully occupied",
+          "nl": "Laadpunt volledig bezet"
         },
         "args": [
           {
@@ -196,7 +196,7 @@
         "id": "stop",
         "title": {
           "en": "Connector disconnected",
-          "nl": "Connector ontkoppelt"
+          "nl": "Connector ontkoppeld"
         },
         "args": [
           {
@@ -465,6 +465,17 @@
     }
   ],
   "capabilities": {
+    "active_card": {
+      "type": "string",
+      "title": {
+        "en": "Active charge card",
+        "nl": "Actieve laadpas"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/card.svg"
+    },
     "alarm_online": {
       "type": "boolean",
       "title": {

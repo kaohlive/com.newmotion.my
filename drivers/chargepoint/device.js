@@ -77,7 +77,7 @@ class Chargepoint extends Homey.Device {
     start_update_loop() {
         this._timer = setInterval(() => {
             this.updateDevice();
-        }, 60000); //1 min
+        }, 60000); //1 minute
     }
 
     async updateDevice() {
@@ -106,7 +106,7 @@ class Chargepoint extends Homey.Device {
                 this.driver.ready().then(() => {
                     console.log('Trigger start event, a free connector is no more.');
                     this.driver.triggerStart( this, {
-                        cardname:this.getStoreValue('card').name,
+                        cardname:data.e.cardname,
                         carname:this.getStoreValue('car').name
                     }, {} );
                 });
@@ -114,7 +114,7 @@ class Chargepoint extends Homey.Device {
                 this.driver.ready().then(() => {
                     console.log('Trigger stop event, all connectors are now free.');
                     this.driver.triggerStop( this, {
-                        cardname:this.getStoreValue('card').name,
+                        cardname:data.e.cardname,
                         carname:this.getStoreValue('car').name
                     }, {} );
                 });
@@ -138,7 +138,7 @@ class Chargepoint extends Homey.Device {
                 this.driver.ready().then(() => {
                     console.log('Trigger charging completed event, a connector is no longer charging.');
                     this.driver.triggerCompleted( this, {
-                        cardname:this.getStoreValue('card').name,
+                        cardname:data.e.cardname,
                         carname:this.getStoreValue('car').name
                     }, {} );
                 });
@@ -148,7 +148,7 @@ class Chargepoint extends Homey.Device {
                 this.driver.ready().then(() => {
                     console.log('Trigger charging started event, a connector is now charging.');
                     this.driver.triggerCharging( this, {
-                        cardname:this.getStoreValue('card').name,
+                        cardname:data.e.cardname,
                         carname:this.getStoreValue('car').name
                     }, {} );
                 });
@@ -167,6 +167,11 @@ class Chargepoint extends Homey.Device {
             this.setIfHasCapability('power.max', (data.e.availablepower/1000))
         else
             this.setIfHasCapability('power.max', 0)
+
+        if (data.e.charging === data.e.total)
+            this.setIfHasCapability('active_card', data.e.cardname)
+        else
+            this.setIfHasCapability('active_card', null)
 
         if(settings.charge_capacity>0 && data.e.charging > 0) {
             // this.setIfHasCapability('measure_power.current', (this.getSettings().charge_capacity*1000))

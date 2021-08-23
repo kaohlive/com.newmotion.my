@@ -2,7 +2,7 @@
   "id": "stop",
   "title": {
     "en": "Connector disconnected",
-    "nl": "Connector ontkoppelt"
+    "nl": "Connector ontkoppeld"
   },
   "args": [
     {
