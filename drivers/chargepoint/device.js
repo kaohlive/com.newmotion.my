@@ -23,7 +23,10 @@ class Chargepoint extends Homey.Device {
         this._conditionActiveChargeForCard = this.homey.flow.getConditionCard('charging_state_card');
         this.setupConditionActiveChargeForCard();   
         this._conditionActiveChargeForCardCar = this.homey.flow.getConditionCard('charging_state_generic');
-        this.setupConditionActiveChargeForCardCar();   
+        this.setupConditionActiveChargeForCardCar();
+        //This version introduces the active card capability so add it to existing devices
+        if(!this.hasCapability('active_card'))
+            await this.addCapability('active_card');  
     }
 
     setupDeviceSettings()
@@ -113,8 +116,9 @@ class Chargepoint extends Homey.Device {
             } else if (prev.e.free<prev.e.total && data.e.total == data.e.free) {
                 this.driver.ready().then(() => {
                     console.log('Trigger stop event, all connectors are now free.');
+                    //Grab the used carge card from our prev object, the current non chargting state has no longer an card object
                     this.driver.triggerStop( this, {
-                        cardname:data.e.cardname,
+                        cardname:prev.e.cardname,
                         carname:this.getStoreValue('car').name
                     }, {} );
                 });
@@ -137,8 +141,9 @@ class Chargepoint extends Homey.Device {
             if(prev.e.charging > data.e.charging) {
                 this.driver.ready().then(() => {
                     console.log('Trigger charging completed event, a connector is no longer charging.');
+                    //Grab the used carge card from our prev object, the current non chargting state has no longer an card object
                     this.driver.triggerCompleted( this, {
-                        cardname:data.e.cardname,
+                        cardname:prev.e.cardname,
                         carname:this.getStoreValue('car').name
                     }, {} );
                 });

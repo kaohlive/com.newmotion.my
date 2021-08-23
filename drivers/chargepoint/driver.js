@@ -169,6 +169,7 @@ class ChargepointDriver extends Homey.Driver {
     }
 
     triggerStart(device, tokens, state) {
+        console.log('Car connected trigger')
         this._flowTriggerStart
             .trigger(device, tokens, state)
             .then(this.log)
@@ -176,6 +177,7 @@ class ChargepointDriver extends Homey.Driver {
     }
 
     triggerStop(device, tokens, state) {
+        console.log('Car disconnected trigger')
         this._flowTriggerStop
             .trigger(device, tokens, state)
             .then(this.log)
@@ -183,6 +185,7 @@ class ChargepointDriver extends Homey.Driver {
     }
 
     triggerCompleted(device, tokens, state) {
+        console.log('Completed session trigger')
         this._flowTriggerCompleted
             .trigger(device, tokens, state)
             .then(this.log)
@@ -190,6 +193,7 @@ class ChargepointDriver extends Homey.Driver {
     }
 
     triggerChanged(device, tokens, state) {
+        console.log('State changed trigger')
         this._flowTriggerChanged
             .trigger(device, tokens, state)
             .then(this.log)
@@ -197,12 +201,14 @@ class ChargepointDriver extends Homey.Driver {
     }
 
     triggerOccupied(device) {
+        console.log('Charger occupied trigger')
         this._flowTriggerOccupied
             .trigger(device, {}, {})
             .then(this.log)
             .catch(this.error)
     }
     triggerCharging(device, tokens, state){
+        console.log('Start charging trigger')
         this._flowTriggerCharging
             .trigger(device, tokens, state)
             .then(this.log)
@@ -210,6 +216,7 @@ class ChargepointDriver extends Homey.Driver {
     }
 
     triggerFree(device) {
+        console.log('Charger is free trigger')
         this._flowTriggerFree
             .trigger(device, {}, {})
             .then(this.log)

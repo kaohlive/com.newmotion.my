@@ -43,5 +43,8 @@
   },
   "3.1.2": {
     "en": "Attempt to fix the app icon properly"
+  },
+  "3.2.0": {
+    "en": "Added support to show the active card in the device screen and active card now is retrieved from the session. This results in support for sessions started using a card swipe for example. Thanks to HansAllis for this code."
   }
 }
