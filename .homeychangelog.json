@@ -46,5 +46,8 @@
   },
   "3.2.0": {
     "en": "Added support to show the active card in the device screen and active card now is retrieved from the session. This results in support for sessions started using a card swipe for example. Thanks to HansAllis for this code."
+  },
+  "3.2.1": {
+    "en": "Another quick bugfix as a response to changes api behaviour, again thanks to hansallis for the quick fix"
   }
 }

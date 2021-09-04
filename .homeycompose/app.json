@@ -6,7 +6,7 @@
   },
   "sdk": 3,
   "brandColor": "#353535",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "compatibility": ">=5.0.0",
   "author": {
     "name": "Kaoh",
@@ -16,6 +16,13 @@
   "source": "https://github.com/kaohlive/com.newmotion.my",
   "contributing": {
     "donate": {}
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "hansallis"
+      }
+    ]
   },
   "category": "energy",
   "tags": {
@@ -37,8 +44,8 @@
     "small": "/assets/images/small.png"
   },
   "description": {
-    "en": "Support for private new motion charging points.",
-    "nl": "Ondersteuning voor private new motion laadpunten"
+    "en": "Smart charging at home for you electric vehicle",
+    "nl": "Slim thuis laden van je electrische auto"
   },
   "capabilities": [
     "onoff",
