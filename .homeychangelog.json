@@ -49,5 +49,8 @@
   },
   "3.2.1": {
     "en": "Another quick bugfix as a response to changes api behaviour, again thanks to hansallis for the quick fix"
+  },
+  "3.3.0": {
+    "en": "Minor bugfix and change to support new shellrecharge domain"
   }
 }
