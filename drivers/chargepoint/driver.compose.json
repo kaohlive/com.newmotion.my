@@ -59,22 +59,6 @@
           },
           "value": 3.3,
           "min": 0
-        },
-        {
-          "id": "connected_car",
-          "type": "label",
-          "label": {
-            "en": "Connected car",
-            "nl": "Verbonden auto"
-          }
-        },
-        {
-          "id": "charge_card",
-          "type": "label",
-          "label": {
-            "en": "Active charge card",
-            "nl": "Actieve laad pas"
-          }
         }
       ]
     }

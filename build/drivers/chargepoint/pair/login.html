@@ -1,0 +1,53 @@
+
+    <h1>My New Motion Account</h1>
+    <p>Please provide your account details.<br />
+    These will be stored on your Homey and used to login during app operations.</p>
+
+    <fieldset>
+        <legend>Account settings</legend>
+
+        <div class="field row">
+            <label for="username">Username</label>
+            <input id="username" type="text" value="" />
+        </div>
+        <div class="field row">
+            <label for="password">Password</label>
+            <input id="password" type="password" value="" />
+        </div>
+
+    </fieldset>
+
+    <button id="save" class="right">Login</button>
+
+    <script type="text/javascript">
+        var usernameElement = document.getElementById('username');
+        var passwordElement = document.getElementById('password');
+        var saveElement = document.getElementById('save');
+
+        saveElement.addEventListener('click', function(e) {
+            Homey.showLoadingOverlay();
+            Homey.emit('testlogin', { 'username':usernameElement.value,'password':passwordElement.value }).then(function (result) {
+                console.log('Testcomplete result: '+result);
+                if(result)
+                {
+                    Homey.hideLoadingOverlay();
+                    Homey.emit( 'discover_chargepoints', null, function( err, result ){
+                        console.log(result); 
+                    });
+                }
+                else
+                {
+                    Homey.hideLoadingOverlay();
+                    Homey.alert("Login validation failed, check your credentials and try again");
+                }
+            });
+        });
+
+        Homey.on('loadaccount', function(credentials, callback){
+            usernameElement.value=credentials.username;
+            passwordElement.value=credentials.password;
+        });
+
+    </script>
+
+</body>
