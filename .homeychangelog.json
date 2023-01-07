@@ -52,5 +52,8 @@
   },
   "3.3.0": {
     "en": "Minor bugfix and change to support new shellrecharge domain"
+  },
+  "3.3.1": {
+    "en": "Fix for backend API change"
   }
 }
