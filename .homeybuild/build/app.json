@@ -1,0 +1,561 @@
+{
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.newmotion.my",
+  "name": {
+    "en": "My New Motion",
+    "nl": "My New Motion"
+  },
+  "sdk": 3,
+  "brandColor": "#353535",
+  "version": "3.3.0",
+  "compatibility": ">=5.0.0",
+  "author": {
+    "name": "Kaoh",
+    "email": "kaoh@kaoh.nl"
+  },
+  "homeyCommunityTopicId": 19001,
+  "source": "https://github.com/kaohlive/com.newmotion.my",
+  "contributing": {
+    "donate": {}
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "hansallis"
+      }
+    ]
+  },
+  "category": "energy",
+  "tags": {
+    "en": [
+      "Chargepoint",
+      "Charging",
+      "EV",
+      "Electric car"
+    ],
+    "nl": [
+      "Laadpaal",
+      "Laden",
+      "EV",
+      "Elektrische auto"
+    ]
+  },
+  "images": {
+    "large": "/assets/images/large.png",
+    "small": "/assets/images/small.png"
+  },
+  "description": {
+    "en": "Smart charging at home for you electric vehicle",
+    "nl": "Slim thuis laden van je electrische auto"
+  },
+  "capabilitiesOptions": {
+    "measure_power": {
+      "approximated": true
+    }
+  },
+  "flow": {
+    "triggers": [
+      {
+        "id": "changed",
+        "title": {
+          "en": "Charge session ended or started",
+          "nl": "Laadsessie gestart of beëindigd"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ]
+      },
+      {
+        "id": "charge_completed",
+        "title": {
+          "en": "Charge session completed",
+          "nl": "Laadsessie afgerond"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ],
+        "tokens": [
+          {
+            "title": {
+              "en": "Connected car",
+              "nl": "Verbonden auto"
+            },
+            "name": "carname",
+            "type": "string",
+            "example": "Polestar"
+          },
+          {
+            "title": {
+              "en": "Active card",
+              "nl": "Actieve kaart"
+            },
+            "name": "cardname",
+            "type": "string",
+            "example": "Newmotion"
+          }
+        ]
+      },
+      {
+        "id": "charging",
+        "title": {
+          "en": "Charge session started",
+          "nl": "Laadsessie begonnen"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ],
+        "tokens": [
+          {
+            "title": {
+              "en": "Connected car",
+              "nl": "Verbonden auto"
+            },
+            "name": "carname",
+            "type": "string",
+            "example": "Polestar"
+          },
+          {
+            "title": {
+              "en": "Active card",
+              "nl": "Actieve kaart"
+            },
+            "name": "cardname",
+            "type": "string",
+            "example": "Newmotion"
+          }
+        ]
+      },
+      {
+        "id": "free",
+        "title": {
+          "en": "Chargepoint available",
+          "nl": "Laadpunt beschikbaar"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ]
+      },
+      {
+        "id": "occupied",
+        "title": {
+          "en": "Chargepoint fully occupied",
+          "nl": "Laadpunt volledig bezet"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ]
+      },
+      {
+        "id": "start",
+        "title": {
+          "en": "Connector connected",
+          "nl": "Verbinding met connector"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ],
+        "tokens": [
+          {
+            "title": {
+              "en": "Connected car",
+              "nl": "Verbonden auto"
+            },
+            "name": "carname",
+            "type": "string",
+            "example": "Polestar"
+          },
+          {
+            "title": {
+              "en": "Active card",
+              "nl": "Actieve kaart"
+            },
+            "name": "cardname",
+            "type": "string",
+            "example": "Newmotion"
+          }
+        ]
+      },
+      {
+        "id": "stop",
+        "title": {
+          "en": "Connector disconnected",
+          "nl": "Connector ontkoppeld"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ],
+        "tokens": [
+          {
+            "title": {
+              "en": "Connected car",
+              "nl": "Verbonden auto"
+            },
+            "name": "carname",
+            "type": "string",
+            "example": "Polestar"
+          },
+          {
+            "title": {
+              "en": "Active card",
+              "nl": "Actieve kaart"
+            },
+            "name": "cardname",
+            "type": "string",
+            "example": "Newmotion"
+          }
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "id": "charging_state_generic",
+        "title": {
+          "en": "Is there a charge session active for a card and car?",
+          "nl": "Is er een actieve laad sessie met een kaart en auto?"
+        },
+        "titleFormatted": {
+          "en": "!{{Is|Isn't}} there an active session with [[card]] for [[car]]",
+          "nl": "!{{Is er|Is er geen}} een laad sessie actief voor [[card]] en [[car]]"
+        },
+        "hint": {
+          "en": "Active charge sessions..."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=chargepoint"
+          },
+          {
+            "type": "autocomplete",
+            "name": "card",
+            "placeholder": {
+              "en": "Using card",
+              "nl": "Met kaart"
+            }
+          },
+          {
+            "type": "autocomplete",
+            "name": "car",
+            "placeholder": {
+              "en": "connected car",
+              "nl": "verbonden auto"
+            }
+          }
+        ]
+      },
+      {
+        "id": "charging_state_card",
+        "title": {
+          "en": "Is there a charge session active for a card?",
+          "nl": "Is er een actieve laad sessie met een kaart?"
+        },
+        "titleFormatted": {
+          "en": "!{{Is|Isn't}} there an active session with [[card]]",
+          "nl": "!{{Is er|Is er geen}} een laad sessie actief voor [[card]]"
+        },
+        "hint": {
+          "en": "Active charge sessions..."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=chargepoint"
+          },
+          {
+            "type": "autocomplete",
+            "name": "card",
+            "placeholder": {
+              "en": "Using card",
+              "nl": "Met kaart"
+            }
+          }
+        ]
+      },
+      {
+        "id": "charging_state",
+        "title": {
+          "en": "Is there a charge session active?",
+          "nl": "Is er een actieve laad sessie?"
+        },
+        "titleFormatted": {
+          "en": "!{{Is|Isn't}} there an active session",
+          "nl": "!{{Is er|Is er geen}} een laad sessie actief"
+        },
+        "hint": {
+          "en": "Active charge sessions..."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "start_charge_generic",
+        "title": {
+          "en": "Start a charging session using a specific card",
+          "nl": "Start een laad sessie met een specifieke kaart"
+        },
+        "titleFormatted": {
+          "en": "Start a charging session using [[card]] for [[car]] with [[chargespeed]] kWh",
+          "nl": "Start een laad sessie met [[card]] voor [[car]] met [[chargespeed]] kWh"
+        },
+        "hint": {
+          "en": "Start a charge session using card..."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=chargepoint"
+          },
+          {
+            "type": "autocomplete",
+            "name": "card",
+            "placeholder": {
+              "en": "Select the charge card"
+            }
+          },
+          {
+            "type": "autocomplete",
+            "name": "car",
+            "placeholder": {
+              "en": "Select the car"
+            }
+          },
+          {
+            "type": "number",
+            "name": "chargespeed",
+            "placeholder": {
+              "en": "Provide the power that the car can pull from this point",
+              "nl": "Geef het vermogen welke de auto uit het laadpunt kan laden"
+            },
+            "unit": "kWh"
+          }
+        ]
+      },
+      {
+        "id": "stop_charge_generic",
+        "title": {
+          "en": "Stop the active charging session",
+          "nl": "Stop de actieve laadsessie"
+        },
+        "hint": {
+          "en": "Stop a active charge session..."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ]
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "id": "chargepoint",
+      "name": {
+        "en": "Charge point",
+        "nl": "Laadpunt"
+      },
+      "images": {
+        "large": "/drivers/chargepoint/assets/images/large.png",
+        "small": "/drivers/chargepoint/assets/images/small.png"
+      },
+      "class": "socket",
+      "capabilities": [],
+      "pair": [
+        {
+          "id": "login"
+        },
+        {
+          "id": "discover_chargepoints",
+          "template": "loading",
+          "navigation": {
+            "next": "list_devices"
+          }
+        },
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "device_settings"
+          },
+          "options": {
+            "singular": true
+          }
+        },
+        {
+          "id": "device_settings"
+        },
+        {
+          "id": "error"
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Car settings",
+            "nl": "Auto instellingen"
+          },
+          "children": [
+            {
+              "id": "charge_capacity",
+              "type": "number",
+              "label": {
+                "en": "Charge capacity (kW)",
+                "nl": "Laad vermogen (kW)"
+              },
+              "value": 3.3,
+              "min": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "capabilities": {
+    "active_card": {
+      "type": "string",
+      "title": {
+        "en": "Active charge card",
+        "nl": "Actieve laadpas"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/card.svg"
+    },
+    "alarm_online": {
+      "type": "boolean",
+      "title": {
+        "en": "Offline",
+        "nl": "Offline"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "/assets/health.svg"
+    },
+    "charging": {
+      "type": "boolean",
+      "title": {
+        "en": "Charging",
+        "nl": "Laden"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "/assets/connector.svg"
+    },
+    "connectors": {
+      "type": "number",
+      "title": {
+        "en": "Connectors",
+        "nl": "Aansluitingen"
+      },
+      "getable": true,
+      "setable": false,
+      "units": {
+        "en": ""
+      },
+      "min": 0,
+      "max": 30,
+      "step": 1
+    },
+    "measure_power": {
+      "type": "number",
+      "title": {
+        "en": "Usage",
+        "nl": "Verbruik"
+      },
+      "units": {
+        "en": "W"
+      },
+      "insights": true,
+      "desc": {
+        "en": "Usage in Watt (W)",
+        "nl": "Verbruik in Watt (W)"
+      },
+      "options": {
+        "isApproximated": {
+          "type": "boolean",
+          "default": false,
+          "desc": {
+            "en": "This flag is used to determine that the device itself has no power measurement functionality, but that the driver calculates the energy use."
+          }
+        }
+      },
+      "chartType": "stepLine",
+      "decimals": 0,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/power.svg"
+    },
+    "occupied": {
+      "type": "boolean",
+      "title": {
+        "en": "Occupied",
+        "nl": "Bezet"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "/assets/connector.svg"
+    },
+    "power": {
+      "type": "number",
+      "title": {
+        "en": "Power",
+        "nl": "Vermogen"
+      },
+      "getable": true,
+      "setable": false,
+      "units": {
+        "en": "kW"
+      },
+      "min": 0,
+      "max": 100,
+      "icon": "/assets/power.svg"
+    }
+  }
+}

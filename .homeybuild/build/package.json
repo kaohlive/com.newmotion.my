@@ -1,0 +1,26 @@
+{
+    "name": "mynewmotion-chargingpoint",
+    "version": "0.0.4",
+    "dependencies": {
+        "cookie": "^0.4.1",
+        "form-data": "^2.5.1",
+        "htmlparser2": "^4.0.0",
+        "http.min": "^1.3.2"
+    },
+    "description": "Support for EV charging points.",
+    "main": "app.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/kaohlive/com.newmotion.my.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/kaohlive/com.newmotion.my/issues"
+    },
+    "homepage": "https://github.com/kaohlive/com.newmotion.my#readme"
+}
