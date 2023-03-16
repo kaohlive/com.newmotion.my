@@ -3,6 +3,7 @@
 const Homey = require('homey')
 const MNM = require('../../lib/mnm')
 const CP = require('./chargepoint')
+const HomeyCrypt = require('../../lib/homeycrypt')
 
 function mobile() {
     return
@@ -46,7 +47,7 @@ class ChargepointDriver extends Homey.Driver {
                 //Send the stored credentials to the 
                 var username = this.homey.settings.get('user_email');
                 var cryptedpassword = this.homey.settings.get('user_password');
-                require('../../lib/homeycrypt').decrypt(cryptedpassword,username).then(plainpass =>{
+                HomeyCrypt.decrypt(cryptedpassword,username).then(plainpass =>{
                     session.emit('loadaccount', {'username': username,'password': plainpass});
                 })
             };
@@ -73,7 +74,7 @@ class ChargepointDriver extends Homey.Driver {
             console.log('Test login and provide feedback, username length: '+data.username.length+' password length: '+data.password.length);
             //Store the provided credentials, but hash and salt it first
             this.homey.settings.set('user_email',data.username);
-            require('../../lib/homeycrypt').crypt(data.password,data.username).then(cryptedpass => {
+            HomeyCrypt.crypt(data.password,data.username).then(cryptedpass => {
                 //console.log(JSON.stringify(cryptedpass));
                 this.homey.settings.set('user_password',cryptedpass);
             }) 

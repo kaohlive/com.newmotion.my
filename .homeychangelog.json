@@ -55,5 +55,8 @@
   },
   "3.3.1": {
     "en": "Fix for backend API change"
+  },
+  "3.3.2": {
+    "en": "Attempt to fix model 2023 support"
   }
 }
