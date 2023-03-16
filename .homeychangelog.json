@@ -58,5 +58,8 @@
   },
   "3.3.2": {
     "en": "Attempt to fix model 2023 support"
+  },
+  "3.3.3": {
+    "en": "Attempt to fix homey pro 2023 support"
   }
 }
