@@ -47,6 +47,18 @@ function clearAuthCookie()
     auth_token.api_cookie='';
 }
 
+function parseAuthCookie(setcookie)
+{
+    var cookie=''
+    setcookie.split('; ').map(
+        function (val) { 
+            var cookiename = val.split('=')[0]
+            if(cookiename==='tnm_api')
+                cookie=val.split('=')[1]
+        });
+    return cookie.substr(1)+'='
+}
+
 async function getAuthCookie(cred_username, cred_secure_password)
 {
     //24 hours ago
@@ -123,19 +135,13 @@ async function getAuthCookie(cred_username, cred_secure_password)
     let postresponse = (await http.post(options))
     //Now parse the response to get the real token we need
     let message = postresponse.response
-    setcookies = cookie.parse(message.headers['set-cookie'][0])
-
-    console.debug('second cookies received: '+JSON.stringify(setcookies))
-    auth_token.api_cookie=setcookies.tnm_api;
-    console.log('token value: '+JSON.stringify(auth_token.api_cookie))
-    if(auth_token.api_cookie === undefined)
-    {
-        auth_token.api_cookie = ''
-        console.info('could not retriev the token for this session, try again later')
-    } else {
-        auth_token.set_date= new Date()
-        console.info('new fresh token retrieved')
-    }
+    console.debug('response received: '+message)
+    setcookies = message.headers['set-cookie']
+    console.debug('cookies received: '+setcookies)
+    auth_token.api_cookie=parseAuthCookie(setcookies[0])
+    auth_token.api_cookie=setcookies.map(cookie.parse).filter(cookie => cookie['tnm_api'] !== undefined).pop()['tnm_api'];
+    auth_token.set_date= new Date()
+    console.info('new fresh token retrieved')
     return auth_token.api_cookie
 }
 

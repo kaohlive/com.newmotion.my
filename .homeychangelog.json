@@ -61,5 +61,11 @@
   },
   "3.3.3": {
     "en": "Attempt to fix homey pro 2023 support"
+  },
+  "3.3.4": {
+    "en": "Add support for icon for new charger models"
+  },
+  "3.3.5": {
+    "en": "Change on cookie parsing"
   }
 }

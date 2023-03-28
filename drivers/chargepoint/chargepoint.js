@@ -70,6 +70,7 @@ module.exports.enhance = function (data) {
 module.exports.icon = function (point) {
     if (point.model.startsWith('LOLO') && point._embedded.evses.length == 1) return 'lolo.svg'
     if (point.model.startsWith('HOMEADVANCED') && point._embedded.evses.length == 1) return 'lolo.svg'
+    if (point.model.startsWith('NA22') && point._embedded.evses.length == 1) return 'lolo.svg'
     if (point.serial.startsWith('EVB-P') && point._embedded.evses.length == 1) return 'evbox.svg'
     if (point.serial.startsWith('ICUEVE') && point._embedded.evses.length == 2) return 'icueve2.svg'
     if (point.e.total == 2 && point.e.maxpower == 22.1) return 'public2.svg'
