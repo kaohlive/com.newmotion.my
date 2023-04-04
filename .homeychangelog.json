@@ -67,5 +67,8 @@
   },
   "3.3.5": {
     "en": "Change on cookie parsing"
+  },
+  "3.3.6": {
+    "en": "Attempt to make token handling more stable"
   }
 }

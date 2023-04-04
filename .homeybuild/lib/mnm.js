@@ -47,17 +47,17 @@ function clearAuthCookie()
     auth_token.api_cookie='';
 }
 
-function parseAuthCookie(setcookie)
-{
-    var cookie=''
-    setcookie.split('; ').map(
-        function (val) { 
-            var cookiename = val.split('=')[0]
-            if(cookiename==='tnm_api')
-                cookie=val.split('=')[1]
-        });
-    return cookie.substr(1)+'='
-}
+// function parseAuthCookie(setcookie)
+// {
+//     var cookie=''
+//     setcookie.split('; ').map(
+//         function (val) { 
+//             var cookiename = val.split('=')[0]
+//             if(cookiename==='tnm_api')
+//                 cookie=val.split('=')[1]
+//         });
+//     return cookie.substr(1)+'='
+// }
 
 async function getAuthCookie(cred_username, cred_secure_password)
 {
@@ -138,7 +138,8 @@ async function getAuthCookie(cred_username, cred_secure_password)
     console.debug('response received: '+message)
     setcookies = message.headers['set-cookie']
     console.debug('cookies received: '+setcookies)
-    auth_token.api_cookie=parseAuthCookie(setcookies[0])
+    //auth_token.api_cookie=parseAuthCookie(setcookies[0])
+    
     auth_token.api_cookie=setcookies.map(cookie.parse).filter(cookie => cookie['tnm_api'] !== undefined).pop()['tnm_api'];
     auth_token.set_date= new Date()
     console.info('new fresh token retrieved')
