@@ -70,5 +70,8 @@
   },
   "3.3.6": {
     "en": "Attempt to make token handling more stable"
+  },
+  "3.3.7": {
+    "en": "Another cookie handle fix attempt"
   }
 }
