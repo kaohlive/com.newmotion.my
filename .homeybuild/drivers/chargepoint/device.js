@@ -27,7 +27,14 @@ class Chargepoint extends Homey.Device {
         this.setupConditionActiveChargeForCardCar();
         //This version introduces the active card capability so add it to existing devices
         if(!this.hasCapability('active_card'))
-            await this.addCapability('active_card');  
+            await this.addCapability('active_card'); 
+        //New capabilities to add
+        if(!this.hasCapability('last_session_card'))
+            await this.addCapability('last_session_card');  
+        if(!this.hasCapability('meter_consumedlast'))
+            await this.addCapability('meter_consumedlast');  
+        if(!this.hasCapability('meter_consumedmonth'))
+            await this.addCapability('meter_consumedmonth');  
     }
 
     setupDeviceSettings()
@@ -195,6 +202,26 @@ class Chargepoint extends Homey.Device {
         }
 
         console.info('device updated')
+
+        console.info('now retrieve the current months charge sessions')
+        var date = new Date();
+        date.setHours(23, 59, 59, 0); //End Of day
+        //Get from the first of this month till now
+        await MNM.getChargeSessions(fresh_token,id, new Date(date.getFullYear(), date.getMonth(), 1), date).then(sessions => {
+            if(sessions.length>0)
+            {
+                console.log('Update device loaded this month sessions:'+JSON.stringify(sessions));
+                var sum = sessions.reduce((accumulator, currentsession) => accumulator + currentsession.volume, 0);
+                console.log('Lastsession was '+sessions[0].volume+' kWh, This months session total is '+sum+' kWh')
+                this.setIfHasCapability('meter_consumedlast', sessions[0].volume);
+                this.setIfHasCapability('last_session_card', sessions[0].cardname);
+                this.setIfHasCapability('meter_consumedmonth', sum);
+            } else {
+                this.setIfHasCapability('meter_consumedlast', 0);
+                this.setIfHasCapability('last_session_card', null);
+                this.setIfHasCapability('meter_consumedmonth', 0);
+            }
+        });
     }
 
     setIfHasCapability(cap, value) {

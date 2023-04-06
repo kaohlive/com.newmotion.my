@@ -1,0 +1,21 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Last session usage",
+    "nl": "Laatste sessie verbruik"
+  },
+  "units": {
+    "en": "kWh"
+  },
+  "insights": true,
+  "desc": {
+    "en": "The power charged in the last sessions",
+    "nl": "Het vermogen welke in de laadse sessie is gebruikt"
+  },
+  "chartType": "stepLine",
+  "decimals": 0,
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/power.svg"
+}

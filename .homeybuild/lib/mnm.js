@@ -49,11 +49,11 @@ function clearAuthCookie()
 
 async function getAuthCookie(cred_username, cred_secure_password)
 {
-    //24 hours ago
-    let yesterday = new Date()
-    yesterday.setHours(yesterday.getHours() - 24)
+    //1 hours ago
+    let tokenage = new Date()
+    tokenage.setHours(tokenage.getHours() - 1)
     //console.log('token was generated on '+auth_token.set_date+' lets see if it is stale by comparing with '+yesterday)
-    if(auth_token.api_cookie!='' && auth_token.set_date > yesterday)
+    if(auth_token.api_cookie!='' && auth_token.set_date > tokenage)
     {
         console.info('token is still valid')
         return auth_token.api_cookie
@@ -261,87 +261,67 @@ async function getMyChargePoints(token)
     return await Promise.all(promises)
 }
 
-
-
-//todo: Implement a get last charge session, when the session stops we can collect it for the logging
-async function getChargeSessions(token,userid,chargepointid)
+//Retrieves the user id of the current user
+async function getUserId(token)
 {
-    /*
-     url: 'https://ui-chargepoints.shellrecharge.com/api/facade/v1/me',
-{
-    "externalId": "001w000001eorAAA",
-    "email": "v----@v----.--",
-    "country": "Netherlands",
-    "locale": "en_NL",
-    "lastName": "B---",
-    "firstName": "------t",
-    "id": "690000-407a-4000-9fea-26ae0000e4e",
-    "countryCode": "nl",
-    "status": "active",
-    "_links": {
-        "self": {
-            "href": "690000-407a-4000-9fea-26ae0000e4e"
-        },
-        "charge-session-history": {
-            "href": "/v1/charge-session-history?jwt={}}"
-        },
-        "mailing-lists": {
-            "href": "/v1/customers/690000-407a-4000-9fea-26ae0000e4e/mailing-lists"
+    var options = {
+        protocol: 'https:',
+        host: 'ui-chargepoints.shellrecharge.com',
+        path: '/api/facade/v1/me',
+        headers: {
+        'content-type': 'application/octet-stream',
+        'Cookie': 'language.code.selection=en; tnm_api=\"' + token + '\"'
         }
     }
+    console.info('Retrieving my user details')
+
+    let data = JSON.parse((await http.get(options)).data)
+    console.log('User details collected: '+data.id);
+    return data.id;
 }
-     */
 
-    /*
-    var request = require("request");
-
-var options = { method: 'POST',
-  url: 'https://ui-charge-sessions.shellrecharge.com/api/facade/v1/user-sessions/charge-points',
-  headers: 
-   { 
-     'Content-Type': 'application/json',
-     Cookie: 'language.code.selection=en; tnm_api=\"' + (await getAuthCookie()) + '\"' },
-  body: 
-   { userId: ''+userid+'',
-     startDateTime: '2019-09-08T00:00:00+02:00',
-     endDateTime: '2019-10-07T23:59:59+02:00',
-     chargePointSerials: [ ''+chargepointid+'' ],
-     limit: 1
-     offset: 0,
-     sortField: 'startDateTime',
-     sortOrder: 'desc' },
-  json: true };
-
-request(options, function (error, response, body) {
-  if (error) throw new Error(error);
-
-  console.log(body);
-});
-
+//todo: Implement a get last charge session, when the session stops we can collect it for the logging
+async function getChargeSessions(token, chargepointid, startdate, enddate)
 {
-    "total": 39,
-    "results": [
-        {
-            "sessionId": "03012200_484",
-            "operator": "TheNewMotion",
-            "chargePointSerial": "0------00",
-            "chargePointReference": "0------00",
-            "authId": "04----0",
-            "contractId": "NL-TNM-000000-1",
-            "startDateTime": "2019-10-06T22:59:56+02:00",
-            "endDateTime": "2019-10-07T06:44:42+02:00",
-            "duration": "PT27886S",
-            "volume": 8.341,
-            "chargePointAddress": "Burg----------",
-            "chargePointPostalCode": "-----",
-            "chargePointCity": "Bo-----",
-            "chargePointCountry": "NLD",
-            "sessionType": "Reimbursed"
+    var body = JSON.stringify({
+        "startDateTime": startdate.toISOString(),
+        "endDateTime": enddate.toISOString(),
+        "chargePointIds": [
+            ""+chargepointid+""
+        ],
+        "limit": 10000,
+        "offset": 0,
+        "sortField": "startDateTime",
+        "sortOrder": "desc"
+      })
+    var userid = await getUserId(token)
+    var options = {
+        protocol: 'https:',
+        host: 'ui-charge-sessions.shellrecharge.com',
+        path: '/api/facade/v1/customers/'+userid+'/charge-sessions',
+        headers: {
+        'content-type': 'application/json',
+        'Cookie': 'language.code.selection=en; tnm_api=\"' + token + '\"'
         }
-    ]
+    }
+    
+    console.info('Retrieving my charge sessions from '+startdate.toISOString()+' till '+enddate.toISOString());
+    var response = await http.post(options, body);
+
+    let data = JSON.parse((response).data);
+    console.log('All charge sessions retrieved');
+    let sessions = data.results.map((session) => {
+        return {
+            id: session.sessionId,
+            cardname: session.chargeTokenPrintedNumber,
+            volume: session.volume,
+            startdate: session.startDateTime,
+            enddate: session.endDateTime
+        }
+        });
+    return sessions;
 }
-    */
-}
+
 
 module.exports = getSinglePoint
 module.exports.list = getMyChargePoints
@@ -350,5 +330,6 @@ module.exports.cars = getMyCars
 module.exports.car = getMyCar
 module.exports.startSession = startSession
 module.exports.stopSession = stopSession
+module.exports.getChargeSessions = getChargeSessions
 module.exports.getAuthCookie = getAuthCookie
 module.exports.clearAuthCookie = clearAuthCookie

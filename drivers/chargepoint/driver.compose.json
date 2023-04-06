@@ -9,7 +9,8 @@
     "small": "/drivers/chargepoint/assets/images/small.png"
   },
   "class": "socket",
-  "capabilities": [],
+  "capabilities": [
+  ],
   "pair": [
     {
       "id": "login"

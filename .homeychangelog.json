@@ -73,5 +73,8 @@
   },
   "3.3.7": {
     "en": "Another cookie handle fix attempt"
+  },
+  "3.4.0": {
+    "en": "Add support for charge session insights"
   }
 }

@@ -1,0 +1,11 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Last session charge card",
+    "nl": "Laatste sessie laadpas"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/card.svg"
+}

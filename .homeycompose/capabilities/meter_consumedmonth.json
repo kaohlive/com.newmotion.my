@@ -1,0 +1,21 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Total this month",
+    "nl": "Totaal deze maand"
+  },
+  "units": {
+    "en": "kWh"
+  },
+  "insights": true,
+  "desc": {
+    "en": "Session total in kWh this month",
+    "nl": "Sessie totaal in kWh deze maand"
+  },
+  "chartType": "stepLine",
+  "decimals": 0,
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/power.svg"
+}

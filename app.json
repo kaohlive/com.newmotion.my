@@ -7,7 +7,7 @@
   },
   "sdk": 3,
   "brandColor": "#353535",
-  "version": "3.3.7",
+  "version": "3.4.0",
   "compatibility": ">=5.0.0",
   "author": {
     "name": "Kaoh",
@@ -502,6 +502,17 @@
       "max": 30,
       "step": 1
     },
+    "last_session_card": {
+      "type": "string",
+      "title": {
+        "en": "Last session charge card",
+        "nl": "Laatste sessie laadpas"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/card.svg"
+    },
     "measure_power": {
       "type": "number",
       "title": {
@@ -524,6 +535,48 @@
             "en": "This flag is used to determine that the device itself has no power measurement functionality, but that the driver calculates the energy use."
           }
         }
+      },
+      "chartType": "stepLine",
+      "decimals": 0,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/power.svg"
+    },
+    "meter_consumedlast": {
+      "type": "number",
+      "title": {
+        "en": "Last session usage",
+        "nl": "Laatste sessie verbruik"
+      },
+      "units": {
+        "en": "kWh"
+      },
+      "insights": true,
+      "desc": {
+        "en": "The power charged in the last sessions",
+        "nl": "Het vermogen welke in de laadse sessie is gebruikt"
+      },
+      "chartType": "stepLine",
+      "decimals": 0,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/power.svg"
+    },
+    "meter_consumedmonth": {
+      "type": "number",
+      "title": {
+        "en": "Total this month",
+        "nl": "Totaal deze maand"
+      },
+      "units": {
+        "en": "kWh"
+      },
+      "insights": true,
+      "desc": {
+        "en": "Session total in kWh this month",
+        "nl": "Sessie totaal in kWh deze maand"
       },
       "chartType": "stepLine",
       "decimals": 0,
