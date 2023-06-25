@@ -45,13 +45,14 @@ class Chargepoint extends Homey.Device {
         {
             console.log('The store did not hold a card yet, grab it from device data');
             this.setStoreValue('card',this.getData().deviceSettings.card);
-            this.setStoreValue('car',this.getData().deviceSettings.car);
+            //this.setStoreValue('car',this.getData().deviceSettings.car);
             storedCard = this.getStoreValue('card');
             console.log('now known card: '+JSON.stringify(storedCard))
         }
         this.setSettings({
-            charge_card:this.getStoreValue('card').formattedName,
-            connected_car:this.getStoreValue('car').formattedName
+            charge_card:this.getStoreValue('card').formattedName
+            //,
+            //connected_car:this.getStoreValue('car').formattedName
         });
     }
 
@@ -63,7 +64,7 @@ class Chargepoint extends Homey.Device {
         if(value)
         {
             await MNM.startSession(this.getData().id,this.getStoreValue('card').rfid, this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
-            await this.delay(10000)
+            await this.delay(9000)
         }
         else
         {
@@ -100,15 +101,28 @@ class Chargepoint extends Homey.Device {
         let fresh_token = await MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
         if(fresh_token=='')
         {
-            console.log('could not update device state due to no fresh token available')
-            return
+            console.log('could not update device state due to no fresh token available');
+            return;
         }
-        const data = CP.enhance(await MNM(id, fresh_token))
+        let data = null;
+        try {
+            data = CP.enhance(await MNM(id, fresh_token));
+            this.setAvailable();
+        } catch (err) {
+            if(err=='Forbidden')
+            {
+                this.setUnavailable(err);
+                return;
+            }
+        }
+
         //console.log(JSON.stringify(data));
         console.debug('get previous status from cache');
         const prev = this.getStoreValue('cache')
         console.debug('replace cache');
         await this.setStoreValue('cache', data)
+        if(prev== null)
+            return;
         if (prev.e.free !== null) {
             console.debug('free prev: '+prev.e.free+' new: '+data.e.free)
             console.debug('total prev: '+prev.e.total +' new: '+data.e.total)
@@ -124,8 +138,9 @@ class Chargepoint extends Homey.Device {
                 this.driver.ready().then(() => {
                     console.log('Trigger start event, a free connector is no more.');
                     this.driver.triggerStart( this, {
-                        cardname:data.e.cardname,
-                        carname:this.getStoreValue('car').name
+                        cardname:data.e.cardname
+                        //,
+                        //carname:this.getStoreValue('car').name
                     }, {} );
                 });
             } else if (prev.e.free<prev.e.total && data.e.total == data.e.free) {
@@ -133,8 +148,9 @@ class Chargepoint extends Homey.Device {
                     console.log('Trigger stop event, all connectors are now free.');
                     //Grab the used carge card from our prev object, the current non chargting state has no longer an card object
                     this.driver.triggerStop( this, {
-                        cardname:prev.e.cardname,
-                        carname:this.getStoreValue('car').name
+                        cardname:prev.e.cardname
+                        //,
+                        //carname:this.getStoreValue('car').name
                     }, {} );
                 });
             }
@@ -250,29 +266,31 @@ class Chargepoint extends Homey.Device {
         });
     }
 
-    myCars() {
-        console.log('user wants a list of cars');
-        return new Promise(async (resolve) => {
-            MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
-            .then(token => {
-                MNM.cars(token).then(function (cars) {
-                    const mycars = cars.map((car) => {
-                        car.formattedName = car.name+' ('+car.battery+' kW)';
-                        return car;
-                    });
-                    return resolve(mycars);
-                });
-            })
-        });        
-    }
+    // myCars() {
+    //     console.log('user wants a list of cars');
+    //     return new Promise(async (resolve) => {
+    //         MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+    //         .then(token => {
+    //             MNM.cars(token).then(function (cars) {
+    //                 const mycars = cars.map((car) => {
+    //                     car.formattedName = car.name+' ('+car.battery+' kW)';
+    //                     return car;
+    //                 });
+    //                 return resolve(mycars);
+    //             });
+    //         })
+    //     });        
+    // }
 
     setupConditionActiveChargeForCardCar(){
         this._conditionActiveChargeForCardCar
         .registerRunListener(async (args, state) => {
-          console.log('is the session active for ('+args.car.name+') using card: '+args.card.name);
+          //console.log('is the session active for ('+args.car.name+') using card: '+args.card.name);
+          console.log('is the session active for card: '+args.card.name);
           return new Promise((resolve, reject) => {
               let isCharging= this.getCapabilityValue('charging');
-              resolve(isCharging && this.getStoreValue('card').rfid==args.card.rfid && this.getStoreValue('car').name==args.car.name);
+              //resolve(isCharging && this.getStoreValue('card').rfid==args.card.rfid && this.getStoreValue('car').name==args.car.name);
+              resolve(isCharging && this.getStoreValue('card').rfid==args.card.rfid);
           });
         });
       this._conditionActiveChargeForCardCar
@@ -314,15 +332,17 @@ class Chargepoint extends Homey.Device {
     setupStartGenericCharging() {
         this._startGenericCharging
           .registerRunListener(async (args, state) => {
-            console.log('attempt to start charging the car ('+args.car.name+') using card: '+args.card.name);
+            //console.log('attempt to start charging the car ('+args.car.name+') using card: '+args.card.name);
+            console.log('attempt to start charging using card: '+args.card.name);
             return new Promise((resolve, reject) => {
-                console.log('store new linked car and card to device');
+                //console.log('store new linked car and card to device');
+                console.log('store new linked card to device');
                 this.setStoreValue('card',args.card);
-                this.setStoreValue('car',args.car);
+                //this.setStoreValue('car',args.car);
                 console.log('update device settings');
                 this.setSettings({
                     charge_card:args.card.formattedName,
-                    connected_car:args.car.formattedName,
+                   // connected_car:args.car.formattedName,
                     charge_capacity:args.chargespeed
                 });
                 console.log('now send the charge command');
@@ -337,10 +357,10 @@ class Chargepoint extends Homey.Device {
           .registerArgumentAutocompleteListener('card', async (query) => {
             return this.myChargeCards();
           });
-        this._startGenericCharging
-          .registerArgumentAutocompleteListener('car' , async (query) => {
-            return this.myCars();
-          });
+        // this._startGenericCharging
+        //   .registerArgumentAutocompleteListener('car' , async (query) => {
+        //     return this.myCars();
+        //   });
       }
 
       setupStopGenericCharging() {

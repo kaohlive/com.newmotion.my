@@ -11,6 +11,10 @@
   "class": "socket",
   "capabilities": [
   ],
+  "repair": [
+    {
+      "id": "login"
+    }],
   "pair": [
     {
       "id": "login"

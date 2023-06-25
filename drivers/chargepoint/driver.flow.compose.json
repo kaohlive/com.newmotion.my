@@ -25,7 +25,7 @@
           "type": "autocomplete",
           "name": "car",
           "placeholder": {
-            "en": "Select the car"
+            "en": "Select the car (deprecated)"
           }
         },
         {
@@ -54,8 +54,8 @@
     {
       "id": "charging_state_generic",
       "title": {
-        "en": "Is there a charge session active for a card and car?",
-        "nl": "Is er een actieve laad sessie met een kaart en auto?"
+        "en": "Is there a charge session active for a card and car (car is deprecated)?",
+        "nl": "Is er een actieve laad sessie met een kaart en auto (auto is vervallen)?"
       },
       "titleFormatted": {
         "en": "!{{Is|Isn't}} there an active session with [[card]] for [[car]]",
@@ -77,8 +77,8 @@
           "type": "autocomplete",
           "name": "car",
           "placeholder": {
-            "en": "connected car",
-            "nl": "verbonden auto"
+            "en": "connected car (deprecated)",
+            "nl": "verbonden auto (vervallen)"
           }
         }
       ]

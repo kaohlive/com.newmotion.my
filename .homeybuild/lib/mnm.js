@@ -62,8 +62,15 @@ async function getAuthCookie(cred_username, cred_secure_password)
         console.info('stale or invalid token, retrieve new one')
     }
     //Else refresh the cookie first
-    let userEmail = cred_username
-    let userPwd = await HomeyCrypt.decrypt(cred_secure_password,userEmail);
+    let userEmail = cred_username;
+    let userPwd = null;
+    try {
+        userPwd = await HomeyCrypt.decrypt(cred_secure_password,userEmail);
+    } catch (err) {
+        clearAuthCookie();
+        console.info('could not decrypt using salt, network connection changed?');
+        return;   
+    }
     console.log('credentials retrieved from settings and decrypted')
     var options = {
         protocol: 'https:',
@@ -224,6 +231,8 @@ function getSinglePoint(id, token) {
             }
             let response = await http.get(options);
             console.log('chargepoint response: '+JSON.stringify(response.data));
+            if(response.data==="Forbidden")
+                reject("Forbidden")
             let data = JSON.parse(response.data);
             resolve(data);
         } catch (err) {

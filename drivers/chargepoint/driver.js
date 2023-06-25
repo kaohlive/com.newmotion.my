@@ -36,6 +36,58 @@ class ChargepointDriver extends Homey.Driver {
           
     }
 
+   async onRepair(session, device) {
+        // Argument session is a PairSocket, similar to Driver.onPair
+        // Argument device is a Homey.Device that's being repaired
+    
+        session.setHandler("showView", async (data) => {
+            console.log('Login page of repair is showing, send credentials');
+            //Send the stored credentials to the 
+            var username = this.homey.settings.get('user_email');
+            var cryptedpassword = this.homey.settings.get('user_password');
+            try {
+                plainpass = await HomeyCrypt.decrypt(cryptedpassword,username);
+                session.emit('loadaccount', {'username': username,'password': plainpass});
+            } catch (err) {
+                session.emit('loadaccount', {'username': username,'password': ''})
+            }
+        });
+
+        session.setHandler('testlogin', async ( data ) => {
+            console.log('Test login and provide feedback, username length: '+data.username.length+' password length: '+data.password.length);
+            //Store the provided credentials, but hash and salt it first
+            this.homey.settings.set('user_email',data.username);
+            HomeyCrypt.crypt(data.password,data.username).then(cryptedpass => {
+                //console.log(JSON.stringify(cryptedpass));
+                this.homey.settings.set('user_password',cryptedpass);
+            }) 
+            console.log('password encrypted, credentials stored. Clear existing tokens.');               
+            //Now we have the encrypted password stored we can start testing the info
+            MNM.clearAuthCookie();
+            console.log('Test new credentials and get a fresh token.');               
+            var testresult = await MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+            .then(token => {
+                if(token==='')
+                {
+                    console.log('no token recieved, stay here and inform the user');
+                    return false;
+                }
+                else
+                {
+                    console.log('valid token received, progress to next view');
+                    return true;
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                return false;
+            })
+            console.log('credential test ok: '+testresult);
+            return testresult;
+        });
+    
+      }
+
    async onPair(session) {
         let mydevices;
 
@@ -47,12 +99,15 @@ class ChargepointDriver extends Homey.Driver {
                 //Send the stored credentials to the 
                 var username = this.homey.settings.get('user_email');
                 var cryptedpassword = this.homey.settings.get('user_password');
-                HomeyCrypt.decrypt(cryptedpassword,username).then(plainpass =>{
+                try {
+                    plainpass = await HomeyCrypt.decrypt(cryptedpassword,username);
                     session.emit('loadaccount', {'username': username,'password': plainpass});
-                })
+                } catch (err) {
+                    session.emit('loadaccount', {'username': username,'password': ''})
+                }
             };
             if(viewId === 'device_settings') {
-                console.log('Allow the user to select card and car');
+                console.log('Allow the user to select card');
                 MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(token => {
                     MNM.cards(token).then(function (cards) {
                         const mycards = cards.map((card) => {
@@ -60,12 +115,12 @@ class ChargepointDriver extends Homey.Driver {
                         });
                         session.emit('loadcards', mycards);
                     });
-                    MNM.cars(token).then(function (cars) {
-                        const mycars = cars.map((car) => {
-                            return car;
-                        });
-                        session.emit('loadcars', mycars);
-                    });
+                    // MNM.cars(token).then(function (cars) {
+                    //     const mycars = cars.map((car) => {
+                    //         return car;
+                    //     });
+                    //     session.emit('loadcars', mycars);
+                    // });
                 });
             };
         });

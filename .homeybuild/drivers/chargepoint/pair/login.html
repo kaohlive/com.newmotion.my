@@ -1,7 +1,7 @@
 
-    <h1>My New Motion Account</h1>
+    <h1>Shell Recharge Account</h1>
     <p>Please provide your account details.<br />
-    These will be stored on your Homey and used to login during app operations.</p>
+    These will be stored on your Homey encrypted and used to login during app operations.</p>
 
     <fieldset>
         <legend>Account settings</legend>
@@ -38,7 +38,7 @@
                 else
                 {
                     Homey.hideLoadingOverlay();
-                    Homey.alert("Login validation failed, check your credentials and try again");
+                    Homey.alert("Login validation failed, check your credentials or try again. Retrieving the token sometimes fails due to the website. If you are sure your credentials are fine just try a couple of times.");
                 }
             });
         });

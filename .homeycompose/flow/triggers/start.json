@@ -14,8 +14,8 @@
   "tokens": [
       {
           "title":{
-              "en": "Connected car",
-              "nl": "Verbonden auto"
+              "en": "Connected car (deprecated)",
+              "nl": "Verbonden auto (vervallen)"
           },
           "name": "carname",
           "type": "string",

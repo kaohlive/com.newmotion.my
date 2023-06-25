@@ -10,10 +10,10 @@
             <label for="card">Charge card</label>
             <select id="card" value="" ></select>
         </div>
-        <div class="field row">
+        <!--div class="field row">
             <label for="car">Attached car</label>
             <select id="car" value="" ></select>
-        </div>
+        </div-->
 
     </fieldset>
 
@@ -21,7 +21,7 @@
 
     <script type="text/javascript">
         var cardElement = document.getElementById('card');
-        var carElement = document.getElementById('car');
+        //var carElement = document.getElementById('car');
         var saveElement = document.getElementById('saveconfig');
         var chargePoint;
 
@@ -30,13 +30,12 @@
                 name:cardElement.options[cardElement.selectedIndex].text,
                 rfid:cardElement.value
             }
-            let car = {
-                name:carElement.options[carElement.selectedIndex].text,
-                battery:carElement.value
-            }
+            // let car = {
+            //     name:carElement.options[carElement.selectedIndex].text,
+            //     battery:carElement.value
+            // }
             let device_settings = {
-                card:card,
-                car:car
+                card:card
             };
             chargePoint.data.deviceSettings=device_settings;
             var devices = new Array(chargePoint);
@@ -68,15 +67,15 @@
             })
         });
 
-        Homey.on('loadcars', function(cars, callback){
-            cars.forEach(car =>{
-                var option = document.createElement("option");
-            	option.text = car.name+' ('+car.battery+' kW)';
-	            option.value = car.battery;
-                carElement.add(option,null);
-            });
+        // Homey.on('loadcars', function(cars, callback){
+        //     cars.forEach(car =>{
+        //         var option = document.createElement("option");
+        //     	option.text = car.name+' ('+car.battery+' kW)';
+	    //         option.value = car.battery;
+        //         carElement.add(option,null);
+        //     });
 
-        });
+        // });
 
         Homey.getViewStoreValue( 'add_devices', 'devices', function( err, result ){
             console.log(result);

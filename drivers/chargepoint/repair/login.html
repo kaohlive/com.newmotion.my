@@ -31,9 +31,7 @@
                 if(result)
                 {
                     Homey.hideLoadingOverlay();
-                    Homey.emit( 'discover_chargepoints', null, function( err, result ){
-                        console.log(result); 
-                    });
+                    Homey.done();
                 }
                 else
                 {

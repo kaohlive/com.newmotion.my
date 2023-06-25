@@ -2,12 +2,12 @@
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.newmotion.my",
   "name": {
-    "en": "My New Motion",
-    "nl": "My New Motion"
+    "en": "Shell Recharge",
+    "nl": "Shell Recharge"
   },
   "sdk": 3,
   "brandColor": "#353535",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "compatibility": ">=5.0.0",
   "author": {
     "name": "Kaoh",
@@ -45,8 +45,8 @@
     "small": "/assets/images/small.png"
   },
   "description": {
-    "en": "Smart charging at home for you electric vehicle",
-    "nl": "Slim thuis laden van je electrische auto"
+    "en": "Smart charging at home for you electric vehicle using your newmotion/shell recharge point",
+    "nl": "Slim thuis laden van je electrische auto met de new motion/shell recharge laadpaal"
   },
   "capabilitiesOptions": {
     "measure_power": {
@@ -85,8 +85,8 @@
         "tokens": [
           {
             "title": {
-              "en": "Connected car",
-              "nl": "Verbonden auto"
+              "en": "Connected car (deprecated)",
+              "nl": "Verbonden auto (vervallen)"
             },
             "name": "carname",
             "type": "string",
@@ -119,8 +119,8 @@
         "tokens": [
           {
             "title": {
-              "en": "Connected car",
-              "nl": "Verbonden auto"
+              "en": "Connected car (deprecated)",
+              "nl": "Verbonden auto (vervallen)"
             },
             "name": "carname",
             "type": "string",
@@ -181,8 +181,8 @@
         "tokens": [
           {
             "title": {
-              "en": "Connected car",
-              "nl": "Verbonden auto"
+              "en": "Connected car (deprecated)",
+              "nl": "Verbonden auto (vervallen)"
             },
             "name": "carname",
             "type": "string",
@@ -215,8 +215,8 @@
         "tokens": [
           {
             "title": {
-              "en": "Connected car",
-              "nl": "Verbonden auto"
+              "en": "Connected car (deprecated)",
+              "nl": "Verbonden auto (vervallen)"
             },
             "name": "carname",
             "type": "string",
@@ -238,8 +238,8 @@
       {
         "id": "charging_state_generic",
         "title": {
-          "en": "Is there a charge session active for a card and car?",
-          "nl": "Is er een actieve laad sessie met een kaart en auto?"
+          "en": "Is there a charge session active for a card and car (car is deprecated)?",
+          "nl": "Is er een actieve laad sessie met een kaart en auto (auto is vervallen)?"
         },
         "titleFormatted": {
           "en": "!{{Is|Isn't}} there an active session with [[card]] for [[car]]",
@@ -266,8 +266,8 @@
             "type": "autocomplete",
             "name": "car",
             "placeholder": {
-              "en": "connected car",
-              "nl": "verbonden auto"
+              "en": "connected car (deprecated)",
+              "nl": "verbonden auto (vervallen)"
             }
           }
         ]
@@ -354,7 +354,7 @@
             "type": "autocomplete",
             "name": "car",
             "placeholder": {
-              "en": "Select the car"
+              "en": "Select the car (deprecated)"
             }
           },
           {
@@ -400,6 +400,11 @@
       },
       "class": "socket",
       "capabilities": [],
+      "repair": [
+        {
+          "id": "login"
+        }
+      ],
       "pair": [
         {
           "id": "login"
