@@ -64,7 +64,7 @@ class Chargepoint extends Homey.Device {
         if(value)
         {
             await MNM.startSession(this.getData().id,this.getStoreValue('card').rfid, this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
-            await this.delay(9000)
+            await this.delay(10000)
         }
         else
         {
@@ -138,7 +138,8 @@ class Chargepoint extends Homey.Device {
                 this.driver.ready().then(() => {
                     console.log('Trigger start event, a free connector is no more.');
                     this.driver.triggerStart( this, {
-                        cardname:data.e.cardname
+                        cardname:data.e.cardname,
+                        carname: 'deprecated'
                         //,
                         //carname:this.getStoreValue('car').name
                     }, {} );
@@ -148,7 +149,8 @@ class Chargepoint extends Homey.Device {
                     console.log('Trigger stop event, all connectors are now free.');
                     //Grab the used carge card from our prev object, the current non chargting state has no longer an card object
                     this.driver.triggerStop( this, {
-                        cardname:prev.e.cardname
+                        cardname:prev.e.cardname,
+                        carname: 'deprecated'
                         //,
                         //carname:this.getStoreValue('car').name
                     }, {} );
@@ -175,7 +177,8 @@ class Chargepoint extends Homey.Device {
                     //Grab the used carge card from our prev object, the current non chargting state has no longer an card object
                     this.driver.triggerCompleted( this, {
                         cardname:prev.e.cardname,
-                        carname:this.getStoreValue('car').name
+                        carname: 'deprecated'
+                        //carname:this.getStoreValue('car').name
                     }, {} );
                 });
             }
@@ -185,7 +188,8 @@ class Chargepoint extends Homey.Device {
                     console.log('Trigger charging started event, a connector is now charging.');
                     this.driver.triggerCharging( this, {
                         cardname:data.e.cardname,
-                        carname:this.getStoreValue('car').name
+                        carname: 'deprecated'
+                        //carname:this.getStoreValue('car').name
                     }, {} );
                 });
             }
