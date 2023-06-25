@@ -76,5 +76,8 @@
   },
   "3.4.0": {
     "en": "Add support for charge session insights"
+  },
+  "3.5.0": {
+    "en": "Removed cars api support due to changes on the Shell Recharge side, also attempt to create support of HP2023 LAN adapter use cases and added a repair flow to store your credentials a bit easier. First steps towards the chell recharge rebranding."
   }
 }

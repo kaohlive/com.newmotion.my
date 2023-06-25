@@ -1,12 +1,12 @@
 {
   "id": "com.newmotion.my",
   "name": {
-    "en": "My New Motion",
-    "nl": "My New Motion"
+    "en": "Shell Recharge",
+    "nl": "Shell Recharge"
   },
   "sdk": 3,
   "brandColor": "#353535",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "compatibility": ">=5.0.0",
   "author": {
     "name": "Kaoh",
@@ -44,8 +44,8 @@
     "small": "/assets/images/small.png"
   },
   "description": {
-    "en": "Smart charging at home for you electric vehicle",
-    "nl": "Slim thuis laden van je electrische auto"
+    "en": "Smart charging at home for you electric vehicle using your newmotion/shell recharge point",
+    "nl": "Slim thuis laden van je electrische auto met de new motion/shell recharge laadpaal"
   },
   "capabilities": [
     "onoff",
