@@ -1,6 +1,6 @@
 {
     "settings": {
-      "title": "My New Motion Account",
-      "subtitle": "This page shows the current account credentials\nThe account can only be updated from the add new charge point wizard (add device)."
+      "title": "Shell Recharge Account",
+      "subtitle": "This page shows the current account credentials\nThe account can only be updated from the add new charge point wizard (add device) or the device repair function."
     }
   }

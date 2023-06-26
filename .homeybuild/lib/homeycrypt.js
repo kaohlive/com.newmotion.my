@@ -6,12 +6,14 @@ async function getsalts()
 {
     //console.log(os.networkInterfaces())
     var networkint = await os.networkInterfaces();
-    //console.log(JSON.stringify(networkint));
+    console.log(JSON.stringify(networkint));
     var mac = null;
     if(networkint.wlan0!=null)
         mac = networkint.wlan0[0].mac.split(':');
     else if (networkint.eth0!=null)
         mac = networkint.eth0[0].mac.split(':');
+    else if (networkint.eth1!=null)
+        mac = networkint.eth1[0].mac.split(':');
     var macbuffer=Buffer.from(mac.join(''),'hex');
     //console.log(mac);
     let salt={
