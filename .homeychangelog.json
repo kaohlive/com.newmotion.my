@@ -88,5 +88,8 @@
   },
   "3.5.3": {
     "en": "attempt to support adapter only setups"
+  },
+  "3.6.0": {
+    "en": "Full hp2023 support and rebrand to shell recharge. Added some polish to the app to be more clear."
   }
 }
