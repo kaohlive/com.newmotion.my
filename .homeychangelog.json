@@ -82,5 +82,11 @@
   },
   "3.5.1": {
     "en": "minor fix for workflow triggers"
+  },
+  "3.5.2": {
+    "en": "added debugging info"
+  },
+  "3.5.3": {
+    "en": "attempt to support adapter only setups"
   }
 }
