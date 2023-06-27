@@ -91,5 +91,8 @@
   },
   "3.6.0": {
     "en": "Full hp2023 support and rebrand to shell recharge. Added some polish to the app to be more clear."
+  },
+  "3.6.1": {
+    "en": "fixed lolo icon finally"
   }
 }
