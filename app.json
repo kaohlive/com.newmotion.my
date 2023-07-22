@@ -7,7 +7,7 @@
   },
   "sdk": 3,
   "brandColor": "#353535",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "compatibility": ">=5.0.0",
   "author": {
     "name": "Kaoh",
@@ -71,6 +71,7 @@
       },
       {
         "id": "charge_completed",
+        "deprecated": true,
         "title": {
           "en": "Charge session completed",
           "nl": "Laadsessie afgerond"
@@ -104,7 +105,33 @@
         ]
       },
       {
+        "id": "chargecompleted",
+        "title": {
+          "en": "Charge session completed",
+          "nl": "Laadsessie afgerond"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ],
+        "tokens": [
+          {
+            "title": {
+              "en": "Active card",
+              "nl": "Actieve kaart"
+            },
+            "name": "cardname",
+            "type": "string",
+            "example": "Newmotion"
+          }
+        ]
+      },
+      {
         "id": "charging",
+        "deprecated": true,
         "title": {
           "en": "Charge session started",
           "nl": "Laadsessie begonnen"
@@ -126,6 +153,31 @@
             "type": "string",
             "example": "Polestar"
           },
+          {
+            "title": {
+              "en": "Active card",
+              "nl": "Actieve kaart"
+            },
+            "name": "cardname",
+            "type": "string",
+            "example": "Newmotion"
+          }
+        ]
+      },
+      {
+        "id": "chargingstarted",
+        "title": {
+          "en": "Charge session started",
+          "nl": "Laadsessie begonnen"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ],
+        "tokens": [
           {
             "title": {
               "en": "Active card",
@@ -166,7 +218,58 @@
         ]
       },
       {
+        "id": "sessionstart",
+        "title": {
+          "en": "Connector connected",
+          "nl": "Verbinding met connector"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ],
+        "tokens": [
+          {
+            "title": {
+              "en": "Active card",
+              "nl": "Actieve kaart"
+            },
+            "name": "cardname",
+            "type": "string",
+            "example": "Newmotion"
+          }
+        ]
+      },
+      {
+        "id": "sessionstop",
+        "title": {
+          "en": "Connector disconnected",
+          "nl": "Connector ontkoppeld"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ],
+        "tokens": [
+          {
+            "title": {
+              "en": "Active card",
+              "nl": "Actieve kaart"
+            },
+            "name": "cardname",
+            "type": "string",
+            "example": "Newmotion"
+          }
+        ]
+      },
+      {
         "id": "start",
+        "deprecated": true,
         "title": {
           "en": "Connector connected",
           "nl": "Verbinding met connector"
@@ -201,6 +304,7 @@
       },
       {
         "id": "stop",
+        "deprecated": true,
         "title": {
           "en": "Connector disconnected",
           "nl": "Connector ontkoppeld"
@@ -237,6 +341,7 @@
     "conditions": [
       {
         "id": "charging_state_generic",
+        "deprecated": true,
         "title": {
           "en": "Is there a charge session active for a card and car (car is deprecated)?",
           "nl": "Is er een actieve laad sessie met een kaart en auto (auto is vervallen)?"
@@ -325,7 +430,45 @@
     ],
     "actions": [
       {
+        "id": "start_charge_generic_card",
+        "title": {
+          "en": "Start a charging session using a specific card",
+          "nl": "Start een laad sessie met een specifieke kaart"
+        },
+        "titleFormatted": {
+          "en": "Start a charging session using [[card]] with [[chargespeed]] kWh",
+          "nl": "Start een laad sessie met de kaar [[card]] met [[chargespeed]] kWh"
+        },
+        "hint": {
+          "en": "Start a charge session using card..."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=chargepoint"
+          },
+          {
+            "type": "autocomplete",
+            "name": "card",
+            "placeholder": {
+              "en": "Select the charge card"
+            }
+          },
+          {
+            "type": "number",
+            "name": "chargespeed",
+            "placeholder": {
+              "en": "Provide the power that the car can pull from this point",
+              "nl": "Geef het vermogen welke de auto uit het laadpunt kan laden"
+            },
+            "unit": "kWh"
+          }
+        ]
+      },
+      {
         "id": "start_charge_generic",
+        "deprecated": true,
         "title": {
           "en": "Start a charging session using a specific card",
           "nl": "Start een laad sessie met een specifieke kaart"
