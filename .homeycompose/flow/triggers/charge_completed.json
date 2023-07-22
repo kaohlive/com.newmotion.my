@@ -1,5 +1,6 @@
 {
   "id": "charge_completed",
+  "deprecated": true,
   "title": {
     "en": "Charge session completed",
     "nl": "Laadsessie afgerond"

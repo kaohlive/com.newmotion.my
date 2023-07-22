@@ -15,8 +15,8 @@ class Chargepoint extends Homey.Device {
         this.start_update_loop();
         this.setAvailable();
         //register flow cards
-        this._startGenericCharging = this.homey.flow.getActionCard('start_charge_generic');
-        this.setupStartGenericCharging();        
+        this._startGenericChargingCard = this.homey.flow.getActionCard('start_charge_generic_card');
+        this.setupStartGenericChargingCard();        
         this._stopGenericCharging = this.homey.flow.getActionCard('stop_charge_generic');
         this.setupStopGenericCharging();   
         this._conditionActiveCharge = this.homey.flow.getConditionCard('charging_state');
@@ -25,6 +25,9 @@ class Chargepoint extends Homey.Device {
         this.setupConditionActiveChargeForCard();   
         this._conditionActiveChargeForCardCar = this.homey.flow.getConditionCard('charging_state_generic');
         this.setupConditionActiveChargeForCardCar();
+        //Deprecated
+        this._startGenericCharging = this.homey.flow.getActionCard('start_charge_generic');
+        this.setupStartGenericCharging(); 
         //This version introduces the active card capability so add it to existing devices
         if(!this.hasCapability('active_card'))
             await this.addCapability('active_card'); 
@@ -137,6 +140,10 @@ class Chargepoint extends Homey.Device {
             if (prev.e.free > data.e.free) {
                 this.driver.ready().then(() => {
                     console.log('Trigger start event, a free connector is no more.');
+                    this.driver.triggerSessionStart( this, {
+                        cardname:data.e.cardname
+                    }, {} );
+                    //Deprecated
                     this.driver.triggerStart( this, {
                         cardname:data.e.cardname,
                         carname: 'deprecated'
@@ -148,6 +155,10 @@ class Chargepoint extends Homey.Device {
                 this.driver.ready().then(() => {
                     console.log('Trigger stop event, all connectors are now free.');
                     //Grab the used carge card from our prev object, the current non chargting state has no longer an card object
+                    this.driver.triggerSessionStop( this, {
+                        cardname:prev.e.cardname
+                    }, {} );
+                    //Deprecated
                     this.driver.triggerStop( this, {
                         cardname:prev.e.cardname,
                         carname: 'deprecated'
@@ -175,6 +186,10 @@ class Chargepoint extends Homey.Device {
                 this.driver.ready().then(() => {
                     console.log('Trigger charging completed event, a connector is no longer charging.');
                     //Grab the used carge card from our prev object, the current non chargting state has no longer an card object
+                    this.driver.triggerChargeCompleted( this, {
+                        cardname:prev.e.cardname
+                    }, {} );
+                    //Deprecated
                     this.driver.triggerCompleted( this, {
                         cardname:prev.e.cardname,
                         carname: 'deprecated'
@@ -186,6 +201,10 @@ class Chargepoint extends Homey.Device {
             if(prev.e.charging < data.e.charging) {
                 this.driver.ready().then(() => {
                     console.log('Trigger charging started event, a connector is now charging.');
+                    this.driver.triggerChargingStarted( this, {
+                        cardname:data.e.cardname
+                    }, {} );
+                    //Deprecated
                     this.driver.triggerCharging( this, {
                         cardname:data.e.cardname,
                         carname: 'deprecated'
@@ -333,6 +352,34 @@ class Chargepoint extends Homey.Device {
         });
     }
 
+    setupStartGenericChargingCard() {
+        this._startGenericChargingCard
+          .registerRunListener(async (args, state) => {
+            console.log('attempt to start charging using card: '+args.card.name);
+            return new Promise((resolve, reject) => {
+                //console.log('store new card to device');
+                console.log('store new linked card to device');
+                this.setStoreValue('card',args.card);
+                console.log('update device settings');
+                this.setSettings({
+                    charge_card:args.card.formattedName,
+                    charge_capacity:args.chargespeed
+                });
+                console.log('now send the charge command');
+                MNM.startSession(this.getData().id,args.card.rfid, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
+                    resolve(true);
+                }, (_error) => {
+                  resolve(false);
+                });
+            });
+          });
+        this._startGenericChargingCard
+          .registerArgumentAutocompleteListener('card', async (query) => {
+            return this.myChargeCards();
+          });
+      }
+
+//Deprecated
     setupStartGenericCharging() {
         this._startGenericCharging
           .registerRunListener(async (args, state) => {

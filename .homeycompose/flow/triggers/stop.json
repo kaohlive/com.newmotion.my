@@ -1,5 +1,6 @@
 {
   "id": "stop",
+  "deprecated": true,
   "title": {
     "en": "Connector disconnected",
     "nl": "Connector ontkoppeld"

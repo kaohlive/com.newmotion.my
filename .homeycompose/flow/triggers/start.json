@@ -1,5 +1,6 @@
 {
   "id": "start",
+  "deprecated": true,
   "title": {
     "en": "Connector connected",
     "nl": "Verbinding met connector"

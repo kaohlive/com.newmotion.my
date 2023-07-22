@@ -12,16 +12,16 @@ function mobile() {
 class ChargepointDriver extends Homey.Driver {
 
     onInit() {
-        this._flowTriggerStart = this.homey.flow.getDeviceTriggerCard('start').registerRunListener(async ( args, state ) => {
+        this._flowTriggerSessionStart = this.homey.flow.getDeviceTriggerCard('sessionstart').registerRunListener(async ( args, state ) => {
 			return true;
 		  });
-        this._flowTriggerCompleted = this.homey.flow.getDeviceTriggerCard('charge_completed').registerRunListener(async ( args, state ) => {
+        this._flowTriggerChargeCompleted = this.homey.flow.getDeviceTriggerCard('chargecompleted').registerRunListener(async ( args, state ) => {
 			return true;
 		  });
-        this._flowTriggerCharging = this.homey.flow.getDeviceTriggerCard('charging').registerRunListener(async ( args, state ) => {
+        this._flowTriggerChargingStarted = this.homey.flow.getDeviceTriggerCard('chargingstarted').registerRunListener(async ( args, state ) => {
 			return true;
 		  });
-        this._flowTriggerStop = this.homey.flow.getDeviceTriggerCard('stop').registerRunListener(async ( args, state ) => {
+        this._flowTriggerSessionStop = this.homey.flow.getDeviceTriggerCard('sessionstop').registerRunListener(async ( args, state ) => {
 			return true;
 		  });
         this._flowTriggerChanged = this.homey.flow.getDeviceTriggerCard('changed').registerRunListener(async ( args, state ) => {
@@ -33,7 +33,19 @@ class ChargepointDriver extends Homey.Driver {
         this._flowTriggerFree = this.homey.flow.getDeviceTriggerCard('free').registerRunListener(async ( args, state ) => {
 			return true;
 		  });
-          
+        //Deprecated triggers
+        this._flowTriggerStart = this.homey.flow.getDeviceTriggerCard('start').registerRunListener(async ( args, state ) => {
+			return true;
+		  });
+        this._flowTriggerCompleted = this.homey.flow.getDeviceTriggerCard('charge_completed').registerRunListener(async ( args, state ) => {
+			return true;
+		  });
+        this._flowTriggerStop = this.homey.flow.getDeviceTriggerCard('stop').registerRunListener(async ( args, state ) => {
+			return true;
+		  });
+        this._flowTriggerCharging = this.homey.flow.getDeviceTriggerCard('charging').registerRunListener(async ( args, state ) => {
+			return true;
+		  });  
     }
 
    async onRepair(session, device) {
@@ -224,6 +236,62 @@ class ChargepointDriver extends Homey.Driver {
  
     }
 
+    triggerSessionStart(device, tokens, state) {
+        console.log('Car connected trigger')
+        this._flowTriggerSessionStart
+            .trigger(device, tokens, state)
+            .then(this.log)
+            .catch(this.error)
+    }
+
+    triggerSessionStop(device, tokens, state) {
+        console.log('Car disconnected trigger')
+        this._flowTriggerSessionStop
+            .trigger(device, tokens, state)
+            .then(this.log)
+            .catch(this.error)
+    }
+
+    triggerChargeCompleted(device, tokens, state) {
+        console.log('Completed session trigger')
+        this._flowTriggerChargeCompleted
+            .trigger(device, tokens, state)
+            .then(this.log)
+            .catch(this.error)
+    }
+
+    triggerChanged(device, tokens, state) {
+        console.log('State changed trigger')
+        this._flowTriggerChanged
+            .trigger(device, tokens, state)
+            .then(this.log)
+            .catch(this.error)
+    }
+
+    triggerOccupied(device) {
+        console.log('Charger occupied trigger')
+        this._flowTriggerOccupied
+            .trigger(device, {}, {})
+            .then(this.log)
+            .catch(this.error)
+    }
+    triggerChargingStarted(device, tokens, state){
+        console.log('Start charging trigger')
+        this._flowTriggerChargingStarted
+            .trigger(device, tokens, state)
+            .then(this.log)
+            .catch(this.error)
+    }
+
+    triggerFree(device) {
+        console.log('Charger is free trigger')
+        this._flowTriggerFree
+            .trigger(device, {}, {})
+            .then(this.log)
+            .catch(this.error)
+    }
+
+    //Deprecated ones
     triggerStart(device, tokens, state) {
         console.log('Car connected trigger')
         this._flowTriggerStart
@@ -247,22 +315,6 @@ class ChargepointDriver extends Homey.Driver {
             .then(this.log)
             .catch(this.error)
     }
-
-    triggerChanged(device, tokens, state) {
-        console.log('State changed trigger')
-        this._flowTriggerChanged
-            .trigger(device, tokens, state)
-            .then(this.log)
-            .catch(this.error)
-    }
-
-    triggerOccupied(device) {
-        console.log('Charger occupied trigger')
-        this._flowTriggerOccupied
-            .trigger(device, {}, {})
-            .then(this.log)
-            .catch(this.error)
-    }
     triggerCharging(device, tokens, state){
         console.log('Start charging trigger')
         this._flowTriggerCharging
@@ -271,13 +323,6 @@ class ChargepointDriver extends Homey.Driver {
             .catch(this.error)
     }
 
-    triggerFree(device) {
-        console.log('Charger is free trigger')
-        this._flowTriggerFree
-            .trigger(device, {}, {})
-            .then(this.log)
-            .catch(this.error)
-    }
 
 }
 

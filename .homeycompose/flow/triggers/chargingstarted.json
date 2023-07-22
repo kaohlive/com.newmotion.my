@@ -1,6 +1,5 @@
 {
-  "id": "charging",
-  "deprecated": true,
+  "id": "chargingstarted",
   "title": {
     "en": "Charge session started",
     "nl": "Laadsessie begonnen"
@@ -13,15 +12,6 @@
     }
   ],
   "tokens": [
-      {
-          "title":{
-              "en": "Connected car (deprecated)",
-              "nl": "Verbonden auto (vervallen)"
-          },
-          "name": "carname",
-          "type": "string",
-          "example": "Polestar"
-      },
       {
           "title":{
               "en": "Active card",
