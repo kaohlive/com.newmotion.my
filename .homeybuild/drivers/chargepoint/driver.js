@@ -30,6 +30,9 @@ class ChargepointDriver extends Homey.Driver {
         this._flowTriggerOccupied = this.homey.flow.getDeviceTriggerCard('occupied').registerRunListener(async ( args, state ) => {
 			return true;
 		  });
+        this._flowTriggerOffline = this.homey.flow.getDeviceTriggerCard('offline').registerRunListener(async ( args, state ) => {
+			return true;
+		  });
         this._flowTriggerFree = this.homey.flow.getDeviceTriggerCard('free').registerRunListener(async ( args, state ) => {
 			return true;
 		  });
@@ -275,6 +278,15 @@ class ChargepointDriver extends Homey.Driver {
             .then(this.log)
             .catch(this.error)
     }
+
+    triggerOffline(device) {
+        console.log('Charger offline trigger')
+        this._flowTriggerOffline
+            .trigger(device, {}, {})
+            .then(this.log)
+            .catch(this.error)
+    }
+
     triggerChargingStarted(device, tokens, state){
         console.log('Start charging trigger')
         this._flowTriggerChargingStarted
@@ -315,6 +327,7 @@ class ChargepointDriver extends Homey.Driver {
             .then(this.log)
             .catch(this.error)
     }
+
     triggerCharging(device, tokens, state){
         console.log('Start charging trigger')
         this._flowTriggerCharging

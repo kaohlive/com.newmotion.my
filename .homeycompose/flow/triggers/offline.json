@@ -1,0 +1,14 @@
+{
+  "id": "offline",
+  "title": {
+    "en": "Chargepoint went offline",
+    "nl": "Laadpunt ging offline"
+  },
+  "args": [
+    {
+      "name": "Chargepoint",
+      "type": "device",
+      "filter": "driver_id=chargepoint"
+    }
+  ]
+}

@@ -216,7 +216,16 @@ class Chargepoint extends Homey.Device {
             console.debug('no cached data available, so no events can be generated')
         }
 
-        this.setIfHasCapability('alarm_online',!data.latestOnlineStatus.online)
+        if (this.hasCapability('alarm_online')) {
+            let oldOnlineState = await this.getCapabilityValue('alarm_online');
+            this.setIfHasCapability('alarm_online',!data.latestOnlineStatus.online)
+            if(!oldOnlineState && !data.latestOnlineStatus.online)
+            {
+                console.log('Trigger went offline event, charger is offline.');
+                this.driver.triggerOffline( this, {}, {} );
+            }
+        }
+
         this.setIfHasCapability('onoff', (data.e.free == 0))
         this.setIfHasCapability('occupied', (data.e.free == 0))
         this.setIfHasCapability('charging', (data.e.charging > 0))
