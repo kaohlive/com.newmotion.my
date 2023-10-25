@@ -97,5 +97,8 @@
   },
   "3.7.0": {
     "en": "deprecate flow cards with carname"
+  },
+  "3.7.1": {
+    "en": "added went offline trigger"
   }
 }

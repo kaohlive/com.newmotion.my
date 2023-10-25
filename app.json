@@ -7,7 +7,7 @@
   },
   "sdk": 3,
   "brandColor": "#353535",
-  "version": "3.7.0",
+  "version": "3.7.1",
   "compatibility": ">=5.0.0",
   "author": {
     "name": "Kaoh",
@@ -208,6 +208,20 @@
         "title": {
           "en": "Chargepoint fully occupied",
           "nl": "Laadpunt volledig bezet"
+        },
+        "args": [
+          {
+            "name": "Chargepoint",
+            "type": "device",
+            "filter": "driver_id=chargepoint"
+          }
+        ]
+      },
+      {
+        "id": "offline",
+        "title": {
+          "en": "Chargepoint went offline",
+          "nl": "Laadpunt ging offline"
         },
         "args": [
           {
