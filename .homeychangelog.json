@@ -100,5 +100,8 @@
   },
   "3.7.1": {
     "en": "added went offline trigger"
+  },
+  "3.7.2": {
+    "en": "Fix to handle old chargepoints that have been removed"
   }
 }
