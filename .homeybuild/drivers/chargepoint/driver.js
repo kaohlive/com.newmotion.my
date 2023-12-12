@@ -182,7 +182,13 @@ class ChargepointDriver extends Homey.Driver {
               .then(token => {
                 MNM.list(token)
                     .then(function (points) {
-                        const devices = points.map((point) => {
+                        //A charge point that we could not get details for might be returned as null
+                        const devices = points.filter(function(device) {
+                            if (device === null) {
+                              return false; // skip
+                            }
+                            return true;
+                          }).map((point) => {
                             try{
                                 console.log('Located a device response, lets convert it into a cp');
                                 var enhancedpoint = CP.enhance(point);
@@ -206,7 +212,6 @@ class ChargepointDriver extends Homey.Driver {
                                 console.log(err);
                                 return err;
                             }
-
                         })
                         console.log('back with my devices:'+devices.length);
                         //So we are done here, let the user choose
