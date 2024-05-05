@@ -72,16 +72,20 @@ async function getAuthCookie(cred_username, cred_secure_password)
         return;   
     }
     console.log('credentials retrieved from settings and decrypted')
-    var options = {
+    var requestOptions = {
         protocol: 'https:',
         host: 'account.shellrecharge.com',
-        path: '/'
+        path: '/',
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0'
+        }     
       }
     //Get the new motion html body to get a serverside ajax control setup
-    let formmesssage = (await http.get(options))
+    let formmesssage = (await http.get(requestOptions))
     let data = formmesssage.data
     //Lets store the session cookie
     let formresponse = formmesssage.response
+    console.debug('Response code: '+JSON.stringify(formresponse.statusCode));
     let setcookies = cookie.parse(formresponse.headers['set-cookie'][0])
     console.debug('first cookies received: '+JSON.stringify(setcookies))
     var sessioncookie = setcookies.JSESSIONID
@@ -115,21 +119,23 @@ async function getAuthCookie(cred_username, cred_secure_password)
     formbody[loginElement]=userEmail
     formbody[pwdElement]=userPwd
     formbody[boolElement]='true'
-
+    console.debug('Will use form to post login attempt: session:'+sessioncookie+' loginEmail:'+loginElement+' -loginPwd:'+pwdElement+' -loginBool:'+boolElement)
     //Now post the new login request
-    var options = {
+    var requestOptions = {
         protocol: 'https:',
         host: 'account.shellrecharge.com',
         path: '/ajax_request/' + endpointid + '-00/',
         headers: {
           'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0',
           'Cookie': 'JSESSIONID='+sessioncookie+';'
         },
         form: formbody
     }
-    let postresponse = (await http.post(options))
+    let postresponse = (await http.post(requestOptions))
     //Now parse the response to get the real token we need
-    let message = postresponse.response
+    let message = postresponse.response;
+    console.debug('Response code: '+JSON.stringify(message.statusCode));
     console.debug('response received: '+message);
 
     try {
