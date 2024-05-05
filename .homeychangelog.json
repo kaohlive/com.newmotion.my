@@ -109,5 +109,8 @@
   },
   "3.7.4": {
     "en": "improved error handling"
+  },
+  "3.7.5": {
+    "en": "Fix for login issues"
   }
 }
