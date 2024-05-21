@@ -25,6 +25,8 @@ class Chargepoint extends Homey.Device {
         this.setupConditionActiveChargeForCard();   
         this._conditionActiveChargeForCardCar = this.homey.flow.getConditionCard('charging_state_generic');
         this.setupConditionActiveChargeForCardCar();
+        this._UpdateChargeSpeedCard = this.homey.flow.getActionCard('update_charge_speed');
+        this.setupUpdateChargespeed();
         //Deprecated
         this._startGenericCharging = this.homey.flow.getActionCard('start_charge_generic');
         this.setupStartGenericCharging(); 
@@ -37,8 +39,24 @@ class Chargepoint extends Homey.Device {
         if(!this.hasCapability('meter_consumedlast'))
             await this.addCapability('meter_consumedlast');  
         if(!this.hasCapability('meter_consumedmonth'))
-            await this.addCapability('meter_consumedmonth');  
+            await this.addCapability('meter_consumedmonth');
+        if(this.homey.settings.get('include_power'))
+            if(!this.hasCapability('measure_power'))
+                await this.addCapability('measure_power'); 
+        else
+            if(this.hasCapability('measure_power'))
+                await this.removeCapability('measure_power'); 
     }
+
+    async onSettings({ oldSettings, newSettings, changedKeys }) {
+        if(changedKeys.find(function(str) { return str == 'include_power'}))
+            if(newSettings['include_power'])
+                if(!this.hasCapability('measure_power'))
+                    await this.addCapability('measure_power'); 
+            else
+                if(this.hasCapability('measure_power'))
+                    await this.removeCapability('measure_power'); 
+      }
 
     setupDeviceSettings()
     {
@@ -360,6 +378,21 @@ class Chargepoint extends Homey.Device {
           });
         });
     }
+
+    setupUpdateChargespeed() {
+        this._UpdateChargeSpeedCard
+          .registerRunListener(async (args, state) => {
+            console.log('update the charge speed: '+args.chargespeed);
+            return new Promise((resolve, reject) => {
+                //console.log('store new card to device');
+                console.log('update device settings');
+                this.setSettings({
+                    charge_capacity:args.chargespeed
+                });
+                resolve(true);
+            });
+          });
+      }
 
     setupStartGenericChargingCard() {
         this._startGenericChargingCard

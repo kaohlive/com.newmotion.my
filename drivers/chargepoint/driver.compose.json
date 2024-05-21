@@ -66,6 +66,15 @@
           "min": 0
         }
       ]
+    },
+    {
+      "id": "include_power",
+      "type": "checkbox",
+      "label": {
+        "en": "Include Charge capacity in Energy",
+        "nl": "Laad vermogen in Energie weergeven"
+      },
+      "value": true
     }
   ]
 }
