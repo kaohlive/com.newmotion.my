@@ -112,5 +112,8 @@
   },
   "3.7.5": {
     "en": "Fix for login issues"
+  },
+  "3.7.6": {
+    "en": "Minor change to give more control on power measurements"
   }
 }

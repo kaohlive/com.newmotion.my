@@ -7,7 +7,7 @@
   },
   "sdk": 3,
   "brandColor": "#353535",
-  "version": "3.7.5",
+  "version": "3.7.6",
   "compatibility": ">=5.0.0",
   "author": {
     "name": "Kaoh",
@@ -526,6 +526,36 @@
         ]
       },
       {
+        "id": "update_charge_speed",
+        "title": {
+          "en": "Update the current power usage",
+          "nl": "Stel het gebruikte vermogen in"
+        },
+        "titleFormatted": {
+          "en": "Update the charge power to [[chargespeed]] kWh",
+          "nl": "Werk het vermogen bij naar [[chargespeed]] kWh"
+        },
+        "hint": {
+          "en": "Stelt de vermogen waarde in"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=chargepoint&capabilities=measure_power"
+          },
+          {
+            "type": "number",
+            "name": "chargespeed",
+            "placeholder": {
+              "en": "Provide the power that the car can pull from this point",
+              "nl": "Geef het vermogen welke de auto uit het laadpunt kan laden"
+            },
+            "unit": "kWh"
+          }
+        ]
+      },
+      {
         "id": "stop_charge_generic",
         "title": {
           "en": "Stop the active charging session",
@@ -613,6 +643,15 @@
               "min": 0
             }
           ]
+        },
+        {
+          "id": "include_power",
+          "type": "checkbox",
+          "label": {
+            "en": "Include Charge capacity in Energy",
+            "nl": "Laad vermogen in Energie weergeven"
+          },
+          "value": true
         }
       ]
     }
