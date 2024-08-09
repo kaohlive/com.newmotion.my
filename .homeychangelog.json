@@ -115,5 +115,8 @@
   },
   "3.7.6": {
     "en": "Minor change to give more control on power measurements"
+  },
+  "3.7.7": {
+    "en": "Added support for new evcharger device class"
   }
 }

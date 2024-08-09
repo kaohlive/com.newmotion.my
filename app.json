@@ -7,8 +7,8 @@
   },
   "sdk": 3,
   "brandColor": "#353535",
-  "version": "3.7.6",
-  "compatibility": ">=5.0.0",
+  "version": "3.7.7",
+  "compatibility": ">=12.0.0",
   "author": {
     "name": "Kaoh",
     "email": "kaoh@kaoh.nl"
@@ -585,7 +585,7 @@
         "large": "/drivers/chargepoint/assets/images/large.png",
         "small": "/drivers/chargepoint/assets/images/small.png"
       },
-      "class": "socket",
+      "class": "evcharger",
       "capabilities": [],
       "repair": [
         {
