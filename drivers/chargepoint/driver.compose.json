@@ -8,7 +8,7 @@
     "large": "/drivers/chargepoint/assets/images/large.png",
     "small": "/drivers/chargepoint/assets/images/small.png"
   },
-  "class": "socket",
+  "class": "evcharger",
   "capabilities": [
   ],
   "repair": [
