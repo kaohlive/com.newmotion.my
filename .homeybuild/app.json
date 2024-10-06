@@ -7,7 +7,7 @@
   },
   "sdk": 3,
   "brandColor": "#353535",
-  "version": "3.7.6",
+  "version": "3.7.8",
   "compatibility": ">=12.0.0",
   "author": {
     "name": "Kaoh",
@@ -202,6 +202,45 @@
             "filter": "driver_id=chargepoint"
           }
         ]
+      },
+      {
+        "highlight": true,
+        "title": {
+          "en": "The power changed",
+          "nl": "Het vermogen is veranderd",
+          "de": "Der Verbrauch hat sich gändert",
+          "fr": "L'énergie a changé",
+          "it": "L'energia è cambiata",
+          "sv": "Strömmen ändrades",
+          "no": "Strømmen ble endret",
+          "es": "La potencia ha cambiado",
+          "da": "Strømmen ændrede sig",
+          "ru": "Электроэнергия изменена",
+          "pl": "Zmiana mocy",
+          "ko": "전력 변경됨"
+        },
+        "tokens": [
+          {
+            "name": "measure_power",
+            "title": {
+              "en": "Power",
+              "nl": "Vermogen",
+              "de": "Leistung",
+              "fr": "Puissance",
+              "it": "Potenza",
+              "sv": "Effekt",
+              "no": "Effekt",
+              "es": "Potencia",
+              "da": "Effekt",
+              "ru": "Электроэнергия",
+              "pl": "Moc",
+              "ko": "전력"
+            },
+            "type": "number",
+            "example": 7.5
+          }
+        ],
+        "id": "measure_power_changed"
       },
       {
         "id": "occupied",
