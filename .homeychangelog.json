@@ -118,5 +118,8 @@
   },
   "3.7.7": {
     "en": "Added support for new evcharger device class"
+  },
+  "3.7.8": {
+    "en": "Prepare for breaking homey change"
   }
 }
