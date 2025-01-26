@@ -40,22 +40,34 @@ class Chargepoint extends Homey.Device {
             await this.addCapability('meter_consumedlast');  
         if(!this.hasCapability('meter_consumedmonth'))
             await this.addCapability('meter_consumedmonth');
-        if(this.homey.settings.get('include_power'))
+        if(this.getSetting('include_power')){
+            this.log('Power is included, check capabilities');
             if(!this.hasCapability('measure_power'))
                 await this.addCapability('measure_power'); 
-        else
+            if(!this.hasCapability('meter_power'))
+                await this.addCapability('meter_power'); 
+        } else {
+            this.log('Power is excluded, check capabilities');
             if(this.hasCapability('measure_power'))
-                await this.removeCapability('measure_power'); 
+                await this.removeCapability('measure_power');
+            if(this.hasCapability('meter_power'))
+                await this.removeCapability('meter_power');
+        }
     }
 
     async onSettings({ oldSettings, newSettings, changedKeys }) {
         if(changedKeys.find(function(str) { return str == 'include_power'}))
-            if(newSettings['include_power'])
+            if(newSettings['include_power']) {
                 if(!this.hasCapability('measure_power'))
-                    await this.addCapability('measure_power'); 
-            else
+                    await this.addCapability('measure_power');
+                if(!this.hasCapability('meter_power'))
+                    await this.addCapability('meter_power'); 
+            } else {
                 if(this.hasCapability('measure_power'))
-                    await this.removeCapability('measure_power'); 
+                    await this.removeCapability('measure_power');
+                if(this.hasCapability('meter_power'))
+                    await this.removeCapability('meter_power');
+            }
       }
 
     setupDeviceSettings()
@@ -276,9 +288,19 @@ class Chargepoint extends Homey.Device {
         await MNM.getChargeSessions(fresh_token,id, new Date(date.getFullYear(), date.getMonth(), 1), date).then(sessions => {
             if(sessions.length>0)
             {
-                console.log('Update device loaded this month sessions:'+JSON.stringify(sessions));
+                //console.log('Update device loaded this month sessions:'+JSON.stringify(sessions));
                 var sum = sessions.reduce((accumulator, currentsession) => accumulator + currentsession.volume, 0);
-                console.log('Lastsession was '+sessions[0].volume+' kWh, This months session total is '+sum+' kWh')
+                //console.log(JSON.stringify(sessions[0]));
+                let lastsessionid = sessions[0].id;
+                let previouslastsessionid = this.getStoreValue('lastsessionid');
+                if(previouslastsessionid!=lastsessionid)
+                {
+                    this.setStoreValue('lastsessionid',lastsessionid);
+                    if(this.hasCapability('meter_power')) {
+                        this.setCapabilityValue('meter_power', (this.getCapabilityValue('meter_power')+sessions[0].volume));
+                    }
+                }
+                console.log('Lastsession ['+sessions[0].id+'] was '+sessions[0].volume+' kWh, This months session total is '+sum+' kWh')
                 this.setIfHasCapability('meter_consumedlast', sessions[0].volume);
                 this.setIfHasCapability('last_session_card', sessions[0].cardname);
                 this.setIfHasCapability('meter_consumedmonth', sum);
