@@ -121,5 +121,8 @@
   },
   "3.7.8": {
     "en": "Prepare for breaking homey change"
+  },
+  "3.8.0": {
+    "en": "Added power meter support for the energy dashboard"
   }
 }
