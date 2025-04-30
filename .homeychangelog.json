@@ -124,5 +124,8 @@
   },
   "3.8.0": {
     "en": "Added power meter support for the energy dashboard"
+  },
+  "3.8.1": {
+    "en": "workaround for missing charging state from api"
   }
 }
