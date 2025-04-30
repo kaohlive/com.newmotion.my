@@ -28,7 +28,7 @@ module.exports.enhance = function (data) {
     data.e.occupied = totalOccupied
     //Lets validate we are not actuall charging anyway, sometimes the api doesnt represent this state properly
     console.log('charing connectors: '+data.e.charging+' - cardname: ['+data.e.cardname+']')
-    if(data.e.charging===0 && !(data.e.cardname=='' || data.e.cardname===null ))
+    if(data.e.charging===0 && !(data.e.cardname=='' || data.e.cardname==null))
     {
         data.e.charging+=1;
         console.log('consider active card as proof of charging anyway');
