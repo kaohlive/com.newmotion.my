@@ -255,7 +255,7 @@ class Chargepoint extends Homey.Device {
                 this.driver.triggerOffline( this, {}, {} );
             }
         }
-
+        //console.log(JSON.stringify(data.e))
         this.setIfHasCapability('onoff', (data.e.free == 0))
         this.setIfHasCapability('occupied', (data.e.free == 0))
         this.setIfHasCapability('charging', (data.e.charging > 0))
