@@ -130,5 +130,8 @@
   },
   "3.8.2": {
     "en": "Improved error handling on charge card tokens"
+  },
+  "3.8.3": {
+    "en": "reversal of workaround"
   }
 }
