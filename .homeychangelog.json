@@ -136,5 +136,8 @@
   },
   "3.9.0": {
     "en": "Added support for new homey energy capabilities"
+  },
+  "3.9.1": {
+    "en": "Changed passive consumption value"
   }
 }
