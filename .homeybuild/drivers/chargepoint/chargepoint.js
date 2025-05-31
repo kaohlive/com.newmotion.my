@@ -22,6 +22,10 @@ module.exports.enhance = function (data) {
     let chargingEvses = data._embedded.evses.filter((evse) => evse.status == 'charging')
     chargingEvses.forEach((evse) => { totalCharging += evse.connectors.length })
     data.e.charging = totalCharging
+    let totalPreparing = 0
+    let preparingEvses = data._embedded.evses.filter((evse) => evse.status == 'preparing')
+    preparingEvses.forEach((evse) => { totalPreparing += evse.connectors.length })
+    data.e.preparing = totalPreparing
     let totalOccupied = 0
     let occupiedEvses = data._embedded.evses.filter((evse) => evse.status == 'occupied')
     occupiedEvses.forEach((evse) => { totalOccupied += evse.connectors.length })

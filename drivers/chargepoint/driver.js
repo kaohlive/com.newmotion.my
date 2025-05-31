@@ -130,12 +130,6 @@ class ChargepointDriver extends Homey.Driver {
                         });
                         session.emit('loadcards', mycards);
                     });
-                    // MNM.cars(token).then(function (cars) {
-                    //     const mycars = cars.map((car) => {
-                    //         return car;
-                    //     });
-                    //     session.emit('loadcars', mycars);
-                    // });
                 });
             };
         });

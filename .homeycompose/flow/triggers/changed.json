@@ -1,5 +1,6 @@
 {
   "id": "changed",
+  "deprecated": true,
   "title": {
     "en": "Charge session ended or started",
     "nl": "Laadsessie gestart of beëindigd"

@@ -1,5 +1,6 @@
 {
   "id": "free",
+  "deprecated": true,
   "title": {
     "en": "Chargepoint available",
     "nl": "Laadpunt beschikbaar"

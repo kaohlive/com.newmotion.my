@@ -9,7 +9,7 @@ class Chargepoint extends Homey.Device {
     async onInit() {
         await this.setupDeviceSettings();
         // register a capability listener
-        this.registerCapabilityListener('onoff', this.onCapabilityOnoff.bind(this));
+        //this.registerCapabilityListener('onoff', this.onCapabilityOnoff.bind(this));
 
         this.updateDevice();
         this.start_update_loop();
@@ -31,6 +31,8 @@ class Chargepoint extends Homey.Device {
         this._startGenericCharging = this.homey.flow.getActionCard('start_charge_generic');
         this.setupStartGenericCharging(); 
         //This version introduces the active card capability so add it to existing devices
+        if(this.hasCapability('onoff'))
+            await this.removeCapability('onoff');
         if(!this.hasCapability('active_card'))
             await this.addCapability('active_card'); 
         //New capabilities to add
@@ -40,6 +42,12 @@ class Chargepoint extends Homey.Device {
             await this.addCapability('meter_consumedlast');  
         if(!this.hasCapability('meter_consumedmonth'))
             await this.addCapability('meter_consumedmonth');
+        if(!this.hasCapability('evcharger_charging_state'))
+            await this.addCapability('evcharger_charging_state');
+        if(!this.hasCapability('evcharger_charging'))
+            await this.addCapability('evcharger_charging');
+        else
+            this.registerCapabilityListener('evcharger_charging', this.onCapabilityOnoff.bind(this));
         if(this.getSetting('include_power')){
             this.log('Power is included, check capabilities');
             if(!this.hasCapability('measure_power'))
@@ -92,19 +100,20 @@ class Chargepoint extends Homey.Device {
 
     // this method is called when the Device has requested a state change (turned on or off)
 	async onCapabilityOnoff( value, opts ) {
-        this.setIfHasCapability('onoff', value)
+        this.setIfHasCapability('evcharger_charging', value)
         console.info('turn charging '+value)
         if(value)
         {
+            this.log('Start new charging session');
             await MNM.startSession(this.getData().id,this.getStoreValue('card').rfid, this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
-            await this.delay(10000)
+            this.pause_update_loop(10000)
         }
         else
         {
+            this.log('End charging session');
             await MNM.stopSession(this.getData().id, this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
-            await this.delay(4000)
+            this.pause_update_loop(4000)
         }
-        this.updateDevice()
     }
     
     delay(t, val) {
@@ -126,6 +135,21 @@ class Chargepoint extends Homey.Device {
             this.updateDevice();
         }, 60000); //1 minute
     }
+
+    
+    pause_update_loop(delay) {
+        //Clear the timer to ensure we dont hit one to soon
+        if (this._timer) {
+            this.log('pausing update interval for '+delay)
+            clearInterval(this._timer);
+            this._timer = null;
+        }
+        setTimeout(() => {
+            this.updateDevice()
+            this.start_update_loop()
+        }, delay); // custom delay
+    }
+
 
     async updateDevice() {
         const settings = this.getSettings()
@@ -259,6 +283,7 @@ class Chargepoint extends Homey.Device {
         this.setIfHasCapability('onoff', (data.e.free == 0))
         this.setIfHasCapability('occupied', (data.e.free == 0))
         this.setIfHasCapability('charging', (data.e.charging > 0))
+        this.setIfHasCapability('evcharger_charging', (data.e.charging > 0))
         this.setIfHasCapability('connectors.total', data.e.total)
         this.setIfHasCapability('connectors.free', data.e.free)
         if(data.e.availablepower>0)
@@ -267,10 +292,18 @@ class Chargepoint extends Homey.Device {
             this.setIfHasCapability('power.max', 0)
         //If our port is occupied we want to use the cardname
         if (data.e.free == 0)
+        {
             this.setIfHasCapability('active_card', data.e.cardname)
-        else
+            if(data.e.charging > 0)
+                this.setIfHasCapability('evcharger_charging_state', 'plugged_in_charging')
+            else if (data.e.preparing > 0)
+                this.setIfHasCapability('evcharger_charging_state', 'plugged_in')
+            else
+                this.setIfHasCapability('evcharger_charging_state', 'plugged_in_paused')
+        } else {
             this.setIfHasCapability('active_card', null)
-
+            this.setIfHasCapability('evcharger_charging_state', 'plugged_out')
+        }
         if(settings.charge_capacity>0 && data.e.charging > 0) {
             // this.setIfHasCapability('measure_power.current', (this.getSettings().charge_capacity*1000))
             this.setIfHasCapability('measure_power', (this.getSettings().charge_capacity*1000))
@@ -337,22 +370,6 @@ class Chargepoint extends Homey.Device {
             })
         });
     }
-
-    // myCars() {
-    //     console.log('user wants a list of cars');
-    //     return new Promise(async (resolve) => {
-    //         MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
-    //         .then(token => {
-    //             MNM.cars(token).then(function (cars) {
-    //                 const mycars = cars.map((car) => {
-    //                     car.formattedName = car.name+' ('+car.battery+' kW)';
-    //                     return car;
-    //                 });
-    //                 return resolve(mycars);
-    //             });
-    //         })
-    //     });        
-    // }
 
     setupConditionActiveChargeForCardCar(){
         this._conditionActiveChargeForCardCar
@@ -472,10 +489,6 @@ class Chargepoint extends Homey.Device {
           .registerArgumentAutocompleteListener('card', async (query) => {
             return this.myChargeCards();
           });
-        // this._startGenericCharging
-        //   .registerArgumentAutocompleteListener('car' , async (query) => {
-        //     return this.myCars();
-        //   });
       }
 
       setupStopGenericCharging() {

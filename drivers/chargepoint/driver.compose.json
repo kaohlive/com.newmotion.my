@@ -9,8 +9,10 @@
     "small": "/drivers/chargepoint/assets/images/small.png"
   },
   "class": "evcharger",
-  "capabilities": [
-  ],
+  "energy": {
+    "evCharger": true
+  },
+  "capabilities": [ "evcharger_charging_state", "evcharger_charging" ],
   "repair": [
     {
       "id": "login"
