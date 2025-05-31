@@ -7,8 +7,8 @@
   },
   "sdk": 3,
   "brandColor": "#353535",
-  "version": "3.8.3",
-  "compatibility": ">=12.0.0",
+  "version": "3.9.0",
+  "compatibility": ">=12.4.5",
   "author": {
     "name": "Kaoh",
     "email": "kaoh@kaoh.nl"
@@ -57,6 +57,7 @@
     "triggers": [
       {
         "id": "changed",
+        "deprecated": true,
         "title": {
           "en": "Charge session ended or started",
           "nl": "Laadsessie gestart of beëindigd"
@@ -191,6 +192,7 @@
       },
       {
         "id": "free",
+        "deprecated": true,
         "title": {
           "en": "Chargepoint available",
           "nl": "Laadpunt beschikbaar"
@@ -244,6 +246,7 @@
       },
       {
         "id": "occupied",
+        "deprecated": true,
         "title": {
           "en": "Chargepoint fully occupied",
           "nl": "Laadpunt volledig bezet"
@@ -625,7 +628,13 @@
         "small": "/drivers/chargepoint/assets/images/small.png"
       },
       "class": "evcharger",
-      "capabilities": [],
+      "energy": {
+        "evCharger": true
+      },
+      "capabilities": [
+        "evcharger_charging_state",
+        "evcharger_charging"
+      ],
       "repair": [
         {
           "id": "login"

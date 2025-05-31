@@ -133,5 +133,8 @@
   },
   "3.8.3": {
     "en": "reversal of workaround"
+  },
+  "3.9.0": {
+    "en": "Added support for new homey energy capabilities"
   }
 }
