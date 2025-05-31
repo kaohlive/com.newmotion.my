@@ -18,18 +18,27 @@ module.exports.enhance = function (data) {
 
     //We now grab the active card from the API statusdetail object to accuratly reflect the used card, this should work also when a card was swiped.
     data.e.cardname = (data._embedded.evses[0] && data._embedded.evses[0].statusDetails) ? data._embedded.evses[0].statusDetails.printedNumber : ''
+    //Charging is truly drawing power
     let totalCharging = 0
     let chargingEvses = data._embedded.evses.filter((evse) => evse.status == 'charging')
     chargingEvses.forEach((evse) => { totalCharging += evse.connectors.length })
     data.e.charging = totalCharging
+    //Preparing is when the cable is in and hooked, but no active session started
     let totalPreparing = 0
     let preparingEvses = data._embedded.evses.filter((evse) => evse.status == 'preparing')
     preparingEvses.forEach((evse) => { totalPreparing += evse.connectors.length })
     data.e.preparing = totalPreparing
+    //The overal duration of a connected connector
     let totalOccupied = 0
     let occupiedEvses = data._embedded.evses.filter((evse) => evse.status == 'occupied')
     occupiedEvses.forEach((evse) => { totalOccupied += evse.connectors.length })
     data.e.occupied = totalOccupied
+    //Suspended is the status when there is a EV connected with an active session but it is not charging
+    let totalSuspended = 0
+    let suspendedEvses = data._embedded.evses.filter((evse) => evse.status == 'suspendedev')
+    suspendedEvses.forEach((evse) => { totalSuspended += evse.connectors.length })
+    data.e.suspended = totalSuspended
+    
     // //Lets validate we are not actuall charging anyway, sometimes the api doesnt represent this state properly
     // console.log('charing connectors: '+data.e.charging+' - cardname: ['+data.e.cardname+']')
     // if(data.e.charging===0 && !(data.e.cardname=='' || data.e.cardname==null))

@@ -298,7 +298,7 @@ class Chargepoint extends Homey.Device {
                 this.setIfHasCapability('evcharger_charging_state', 'plugged_in_charging')
             else if (data.e.preparing > 0)
                 this.setIfHasCapability('evcharger_charging_state', 'plugged_in')
-            else
+            else if (data.e.suspended > 0)
                 this.setIfHasCapability('evcharger_charging_state', 'plugged_in_paused')
         } else {
             this.setIfHasCapability('active_card', null)
