@@ -309,7 +309,7 @@ class Chargepoint extends Homey.Device {
             this.setIfHasCapability('measure_power', (this.getSettings().charge_capacity*1000))
         } else {
             // this.setIfHasCapability('measure_power.current', 1)
-            this.setIfHasCapability('measure_power', 1)
+            this.setIfHasCapability('measure_power', 0)
         }
 
         console.info('device updated')
