@@ -1,7 +1,7 @@
 'use strict'
 
 const Homey = require('homey')
-const MNM = require('../../lib/mnm')
+const MNM = require('../../lib/50five')
 const CP = require('./chargepoint')
 
 class Chargepoint extends Homey.Device {
