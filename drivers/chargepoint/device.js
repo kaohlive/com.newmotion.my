@@ -153,30 +153,38 @@ class Chargepoint extends Homey.Device {
 
     async updateDevice() {
         const settings = this.getSettings()
-        const id = this.getData().id
-        const serial = this.getData().serial
         let fresh_token = await MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
         if(fresh_token=='')
         {
-            console.log('could not update device state due to no fresh token available');
+            console.log('❌ 0.0: could not update device state due to no fresh token available');
             return;
         }
+        const point =this.getData();
+        console.log('🔍 0.1: Attempt to get status of chargepoint device');
+        console.dir(point, { depth: null });
+        const id = point.id
+        const serial = point.serial
+
         let data = null;
         try {
-            data = CP.enhance(await MNM(id, fresh_token));
+            const point_details = await MNM(serial, fresh_token);
+            console.log('✅ 0.2: Chargepoint details: ');
+            console.dir(point_details, { depth: null });
+            if(point_details.length==0) {
+                throw new Error('No chargepoints could be located in your account');
+            }
+            data = CP.enhance(point_details);
+            console.dir(data, { depth: null });
             this.setAvailable();
         } catch (err) {
-            if(err=='Forbidden')
-            {
-                this.setUnavailable(err);
-                return;
-            }
+            console.log('❌ 0.2: error enhancing the api into our data model: '+err.message);
+            this.setUnavailable(err.message);
+            return;
         }
-
-        //console.log(JSON.stringify(data));
-        console.debug('get previous status from cache');
+        console.log('✅ 0.3: Located chargepoints');
+        console.debug('🔍 0.4: get previous status from cache');
         const prev = this.getStoreValue('cache')
-        console.debug('replace cache');
+        console.debug('✅ 0.4: replace cache with new status');
         await this.setStoreValue('cache', data)
         if(prev== null)
             return;
