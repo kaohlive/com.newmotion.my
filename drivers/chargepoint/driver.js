@@ -189,7 +189,7 @@ class ChargepointDriver extends Homey.Driver {
                                 console.log('Now setup a basic device for ['+enhancedpoint.name+']');
                                 let devicedev = {
                                     name: enhancedpoint.name,
-                                    data: { name: enhancedpoint.name, id: enhancedpoint.id, serial: enhancedpoint.serial },
+                                    data: { idx: enhancedpoint.idx, serial: enhancedpoint.serial },
                                     store: { cache: enhancedpoint },
                                     mobile: mobile()
                                 }

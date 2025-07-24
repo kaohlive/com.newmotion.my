@@ -70,6 +70,14 @@
       ]
     },
     {
+        "id": "card_printedNumber",
+        "type": "text",
+        "label": {
+          "en": "The printed number of your charge card (authorized)",
+          "nl": "Het nummer afgedrukt op de laadpas (geauthoriseerd)"
+        }
+    },
+    {
       "id": "include_power",
       "type": "checkbox",
       "label": {

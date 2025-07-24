@@ -1,15 +1,12 @@
 'use strict'
 
 const Homey = require('homey')
-const MNM = require('../../lib/50five')
+const FF = require('../../lib/50five')
 const CP = require('./chargepoint')
 
 class Chargepoint extends Homey.Device {
 
     async onInit() {
-        await this.setupDeviceSettings();
-        // register a capability listener
-        //this.registerCapabilityListener('onoff', this.onCapabilityOnoff.bind(this));
 
         this.updateDevice();
         this.start_update_loop();
@@ -78,25 +75,6 @@ class Chargepoint extends Homey.Device {
             }
       }
 
-    setupDeviceSettings()
-    {
-        let storedCard = this.getStoreValue('card');
-        console.log('known card: '+JSON.stringify(storedCard))
-        if(storedCard == null)
-        {
-            console.log('The store did not hold a card yet, grab it from device data');
-            this.setStoreValue('card',this.getData().deviceSettings.card);
-            //this.setStoreValue('car',this.getData().deviceSettings.car);
-            storedCard = this.getStoreValue('card');
-            console.log('now known card: '+JSON.stringify(storedCard))
-        }
-        this.setSettings({
-            charge_card:this.getStoreValue('card').formattedName
-            //,
-            //connected_car:this.getStoreValue('car').formattedName
-        });
-    }
-
 
     // this method is called when the Device has requested a state change (turned on or off)
 	async onCapabilityOnoff( value, opts ) {
@@ -104,15 +82,18 @@ class Chargepoint extends Homey.Device {
         console.info('turn charging '+value)
         if(value)
         {
-            this.log('Start new charging session');
-            await MNM.startSession(this.getData().id,this.getStoreValue('card').rfid, this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
-            this.pause_update_loop(10000)
+            const printedNumber=this.getSetting('card_printedNumber')
+            this.log('Start new charging session, using settings card: '+printedNumber);
+            const chargePoint = await this.getStoreValue('50five');
+            await FF.startSession(chargePoint, chargePoint.channel, this.getSetting('card_printedNumber'), this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+            this.pause_update_loop(20000)
         }
         else
         {
             this.log('End charging session');
-            await MNM.stopSession(this.getData().id, this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
-            this.pause_update_loop(4000)
+            const chargePoint = await this.getStoreValue('50five');
+            await FF.stopSession(chargePoint, chargePoint.channel, this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+            this.pause_update_loop(10000)
         }
     }
     
@@ -133,7 +114,7 @@ class Chargepoint extends Homey.Device {
     start_update_loop() {
         this._timer = setInterval(() => {
             this.updateDevice();
-        }, 60000); //1 minute
+        }, 120000); //2 minute
     }
 
     
@@ -152,30 +133,50 @@ class Chargepoint extends Homey.Device {
 
 
     async updateDevice() {
+        console.log('🔍 0.0: Lets update our charegepoint status');
         const settings = this.getSettings()
-        let fresh_token = await MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+        let fresh_token = await FF.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
         if(fresh_token=='')
         {
             console.log('❌ 0.0: could not update device state due to no fresh token available');
             return;
         }
         const point =this.getData();
-        console.log('🔍 0.1: Attempt to get status of chargepoint device');
-        console.dir(point, { depth: null });
+        console.log('🔍 0.1: Attempt to get status of chargepoint device ['+point.name+'] with serial '+point.serial);
         const id = point.id
         const serial = point.serial
-
+        //Data contains the updated device status once our check is done
         let data = null;
+        let chargePoint = null;
         try {
-            const point_details = await MNM(serial, fresh_token);
             console.log('✅ 0.2: Chargepoint details: ');
-            console.dir(point_details, { depth: null });
-            if(point_details.length==0) {
-                throw new Error('No chargepoints could be located in your account');
+            let deviceVersion = await this.getStoreValue('deviceVersion');
+            if(deviceVersion==='v2'){
+                console.log('✅ 0.2.1: Chargepoint was 50five upgraded');
+                chargePoint = await this.getStoreValue('50five');
+            } else {
+                console.log('✅ 0.2.1: Chargepoint needs 50five upgrade, lets locate its base: ');
+                const point_base = await FF(serial, fresh_token);
+                console.dir(point_base, { depth: null });
+                if(point_base==null) {
+                    console.log('⚠️ 0.2.1: No chargepoint data could be located in your account');
+                    return;
+                }
+                this.setStoreValue('50five',point_base);
+                this.setStoreValue('deviceVersion','v2');
+                console.log('✅ 0.2.2: Chargepoint is upgraded ');
+                chargePoint=point_base;
             }
-            data = CP.enhance(point_details);
-            console.dir(data, { depth: null });
-            this.setAvailable();
+            console.log('🔍 0.3: Attempt to get status of chargepoint device '+chargePoint.idx);
+            let triggerRefresh = await FF.requestUpdate(chargePoint, fresh_token);
+            let point_details = await FF.pointDetails(chargePoint, fresh_token);
+            if(point_details) {
+                //Lets perform our pre-analysis on the status to fill our attributes
+                data = CP.enhance(point_details);
+                console.dir(data, { depth: null });
+                this.setAvailable();
+            }
+            //We dont mark it available till we got the status at least once
         } catch (err) {
             console.log('❌ 0.2: error enhancing the api into our data model: '+err.message);
             this.setUnavailable(err.message);
@@ -184,10 +185,19 @@ class Chargepoint extends Homey.Device {
         console.log('✅ 0.3: Located chargepoints');
         console.debug('🔍 0.4: get previous status from cache');
         const prev = this.getStoreValue('cache')
-        console.debug('✅ 0.4: replace cache with new status');
-        await this.setStoreValue('cache', data)
+        if (data!=null)
+            await this.setStoreValue('cache', data)
+        else
+        {
+            console.log('⚠️ 0.5: There is no new data, no need to trigger events ');
+            return;                        
+        }
         if(prev== null)
-            return;
+        {
+            console.log('⚠️ 0.5: There is no cached data, no option to trigger events ');
+            return; 
+        }
+        console.log('✅ 0.5: replace cache with new status, and alter device capabilities');
         if (prev.e.free !== null) {
             console.debug('free prev: '+prev.e.free+' new: '+data.e.free)
             console.debug('total prev: '+prev.e.total +' new: '+data.e.total)
@@ -280,8 +290,8 @@ class Chargepoint extends Homey.Device {
 
         if (this.hasCapability('alarm_online')) {
             let oldOnlineState = await this.getCapabilityValue('alarm_online');
-            this.setIfHasCapability('alarm_online',!data.latestOnlineStatus.online)
-            if(!oldOnlineState && !data.latestOnlineStatus.online)
+            this.setIfHasCapability('alarm_online',!data.e.latestOnlineStatus)
+            if(!oldOnlineState && !data.e.latestOnlineStatus)
             {
                 console.log('Trigger went offline event, charger is offline.');
                 this.driver.triggerOffline( this, {}, {} );
@@ -291,7 +301,7 @@ class Chargepoint extends Homey.Device {
         this.setIfHasCapability('onoff', (data.e.free == 0))
         this.setIfHasCapability('occupied', (data.e.free == 0))
         this.setIfHasCapability('charging', (data.e.charging > 0))
-        this.setIfHasCapability('evcharger_charging', (data.e.charging > 0))
+        this.setIfHasCapability('evcharger_charging', (data.e.free == 0))
         this.setIfHasCapability('connectors.total', data.e.total)
         this.setIfHasCapability('connectors.free', data.e.free)
         if(data.e.availablepower>0)
@@ -312,38 +322,102 @@ class Chargepoint extends Homey.Device {
             this.setIfHasCapability('active_card', null)
             this.setIfHasCapability('evcharger_charging_state', 'plugged_out')
         }
-        if(settings.charge_capacity>0 && data.e.charging > 0) {
-            // this.setIfHasCapability('measure_power.current', (this.getSettings().charge_capacity*1000))
-            this.setIfHasCapability('measure_power', (this.getSettings().charge_capacity*1000))
-        } else {
-            // this.setIfHasCapability('measure_power.current', 1)
-            this.setIfHasCapability('measure_power', 0)
-        }
 
-        console.info('device updated')
+        console.info('✅ device capabilities updated')
+        console.info('🔍 Get active session power delivered')
+        try {
+            console.log('✅ 0.10: Chargepoint power measurement details: ');
+            let session_details = await FF.SessionLog(chargePoint,fresh_token);
+            let last_info = session_details[session_details.length - 1];
+            console.log(last_info )
+            console.log('✅ 0.11: Chargepoint session details retrieved: last '+session_details.length);
+            if(last_info.STATUS=='10000')
+            {
+                let currentPowerDelivered=last_info.TRANS_ENERGY_DELIVERED_KWH;
+                //Now add the delta of the current session to the status at the start of the session
+                if(this.hasCapability('meter_power')) {
+                    const startMeterValue = await this.getStoreValue('meter_power_cache');
+                    if(startMeterValue!==null)
+                    {
+                        await this.setCapabilityValue('meter_power', (startMeterValue+currentPowerDelivered));
+                        console.log('✅ 0.12: Updated power meter to, was on start ['+startMeterValue+'] '+(startMeterValue+currentPowerDelivered));
+                    }
+                    else
+                    {
+                        await this.setStoreValue('meter_power_cache',await this.getCapabilityValue('meter_power'));
+                        console.log('✅ 0.12: Reset power meter cache to '+(await this.getCapabilityValue('meter_power')));
+                    }
+                }
+                if(this.hasCapability('measure_power')) {
+                    const intervalMeterValue = await this.getStoreValue('meter_power_interval_cache');
+                    let deltaDeliverd = currentPowerDelivered - intervalMeterValue;
+                    if(deltaDeliverd==0)
+                    {
+                        console.log('✅ 0.13: No power deliverd, set usage to 0 ');
+                        await this.setCapabilityValue('measure_power', 0);
+                    } else {
+                        let average_kW = deltaDeliverd / (2 / 60);
+                        await this.setCapabilityValue('measure_power', (average_kW*1000));
+                        await this.setStoreValue('meter_power_interval_cache',currentPowerDelivered);
+                        console.log('✅ 0.13: Updated power usage to '+(average_kW*1000)+' delta:'+deltaDeliverd+' based on prev:'+intervalMeterValue+' new:'+currentPowerDelivered);
+                    }
+                }                    
+            } else {
+                //Store the capability value of the meter_power in the cache so we can use it
+                console.log('✅ 0.12: No active charging state '+(last_info.STATUS));
+                await this.setStoreValue('meter_power_interval_cache',0);
+                await this.setStoreValue('meter_power_cache',await this.getCapabilityValue('meter_power'));
+                if(this.hasCapability('measure_power')) {
+                     await this.setCapabilityValue('measure_power', 0);
+                }
+            }
+        } catch (err) {
+            console.log('❌ 0.11: error getting power measurements: '+err.message);
+        }
 
         console.info('now retrieve the current months charge sessions')
         var date = new Date();
         date.setHours(23, 59, 59, 0); //End Of day
         //Get from the first of this month till now
-        await MNM.getChargeSessions(fresh_token,id, new Date(date.getFullYear(), date.getMonth(), 1), date).then(sessions => {
+
+        //Todo: Rework to new session source
+               this.driver.ready().then(() => {
+                    console.log('Trigger changed event, something changed.');
+                    this.driver.triggerChanged( this, {}, {} );
+                });
+        await FF.TransactionHistory(fresh_token, new Date(date.getFullYear(), date.getMonth(), 1), date).then(sessions => {
             if(sessions.length>0)
             {
                 //console.log('Update device loaded this month sessions:'+JSON.stringify(sessions));
-                var sum = sessions.reduce((accumulator, currentsession) => accumulator + currentsession.volume, 0);
-                //console.log(JSON.stringify(sessions[0]));
-                let lastsessionid = sessions[0].id;
+                var sum = sessions.reduce((accumulator, currentsession) => accumulator + Number(currentsession["6"]), 0);
+                
+                // Step 2: Extract href using regex
+                const match = sessions[0]["0"].match(/href\s*=\s*"([^"]+)"/);
+
+                if (match && match[1]) 
+                    console.log('Extracted hyperlink:', match[1]);
+                else
+                    console.log('Could not find session id:', sessions[0]["0"]);
+
+                let lastsessionid = match[1];
                 let previouslastsessionid = this.getStoreValue('lastsessionid');
                 if(previouslastsessionid!=lastsessionid)
                 {
                     this.setStoreValue('lastsessionid',lastsessionid);
-                    if(this.hasCapability('meter_power')) {
-                        this.setCapabilityValue('meter_power', (this.getCapabilityValue('meter_power')+sessions[0].volume));
-                    }
                 }
-                console.log('Lastsession ['+sessions[0].id+'] was '+sessions[0].volume+' kWh, This months session total is '+sum+' kWh')
-                this.setIfHasCapability('meter_consumedlast', sessions[0].volume);
-                this.setIfHasCapability('last_session_card', sessions[0].cardname);
+                console.log('Lastsession ['+lastsessionid+'] was '+sessions[0]["6"]+' kWh, This months session total is '+sum+' kWh')
+                this.setIfHasCapability('meter_consumedlast', Number(sessions[0]["6"]));
+                
+                // Step 2: Extract text after </i>
+                const cardmatch = sessions[0]["5"].match(/<\/i>\s*(.+)$/);
+
+                if (cardmatch && cardmatch[1]) {
+                    console.log('Extracted value:', cardmatch[1].trim());
+                } else {
+                    console.log('No match found.');
+                }
+
+                this.setIfHasCapability('last_session_card', cardmatch[1]);
                 this.setIfHasCapability('meter_consumedmonth', sum);
             } else {
                 this.setIfHasCapability('meter_consumedlast', 0);
@@ -363,14 +437,16 @@ class Chargepoint extends Homey.Device {
         }
     }
 
+    //TODO: How are we going to retrieve the list of authorized cards?
     myChargeCards() {
         console.log('user wants a list of cards');
         return new Promise(async (resolve) => {
-            MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+            FF.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
             .then(token => {
-                MNM.cards(token).then(function (cards) {
+                FF.cards(token).then(function (cards) {
                     const mycards = cards.map((card) => {
                         card.formattedName = card.name +' ('+card.printedNumber+')';
+                        card.printedNumber = card.printedNumber;
                         return card;
                     });
                     return resolve(mycards);
@@ -379,6 +455,7 @@ class Chargepoint extends Homey.Device {
         });
     }
 
+    //Deprecated
     setupConditionActiveChargeForCardCar(){
         this._conditionActiveChargeForCardCar
         .registerRunListener(async (args, state) => {
@@ -386,8 +463,7 @@ class Chargepoint extends Homey.Device {
           console.log('is the session active for card: '+args.card.name);
           return new Promise((resolve, reject) => {
               let isCharging= this.getCapabilityValue('charging');
-              //resolve(isCharging && this.getStoreValue('card').rfid==args.card.rfid && this.getStoreValue('car').name==args.car.name);
-              resolve(isCharging && this.getStoreValue('card').rfid==args.card.rfid);
+              resolve(isCharging && this.getCapabilityValue('active_card')==args.card.printedNumber);
           });
         });
       this._conditionActiveChargeForCardCar
@@ -396,17 +472,17 @@ class Chargepoint extends Homey.Device {
         });
       this._conditionActiveChargeForCardCar
         .registerArgumentAutocompleteListener('car' , async (query) => {
-          return this.myCars();
+          return null;
         });
     }
-
+    
     setupConditionActiveChargeForCard(){
         this._conditionActiveChargeForCard
         .registerRunListener(async (args, state) => {
           console.log('is the session active for the card: '+args.card.name);
           return new Promise((resolve, reject) => {
               let isCharging= this.getCapabilityValue('charging');
-              resolve(isCharging && this.getStoreValue('card').rfid==args.card.rfid);
+              resolve(isCharging && this.getCapabilityValue('active_card')==args.card.printedNumber);
           });
         });
       this._conditionActiveChargeForCard
@@ -451,11 +527,12 @@ class Chargepoint extends Homey.Device {
                 this.setStoreValue('card',args.card);
                 console.log('update device settings');
                 this.setSettings({
-                    charge_card:args.card.formattedName,
+                    card_printedNumber:args.card.printedNumber,
+                    charge_card:args.card.printedNumber,
                     charge_capacity:args.chargespeed
                 });
                 console.log('now send the charge command');
-                MNM.startSession(this.getData().id,args.card.rfid, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
+                FF.startSession(this.getStoreValue('50five'), args.card.printedNumber, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
                     resolve(true);
                 }, (_error) => {
                   resolve(false);
@@ -472,21 +549,18 @@ class Chargepoint extends Homey.Device {
     setupStartGenericCharging() {
         this._startGenericCharging
           .registerRunListener(async (args, state) => {
-            //console.log('attempt to start charging the car ('+args.car.name+') using card: '+args.card.name);
             console.log('attempt to start charging using card: '+args.card.name);
             return new Promise((resolve, reject) => {
-                //console.log('store new linked car and card to device');
                 console.log('store new linked card to device');
                 this.setStoreValue('card',args.card);
-                //this.setStoreValue('car',args.car);
                 console.log('update device settings');
                 this.setSettings({
-                    charge_card:args.card.formattedName,
-                   // connected_car:args.car.formattedName,
+                    card_printedNumber:args.card.printedNumber,
+                    charge_card:args.card.printedNumber,
                     charge_capacity:args.chargespeed
                 });
                 console.log('now send the charge command');
-                MNM.startSession(this.getData().id,args.card.rfid, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
+                FF.startSession(this.getStoreValue('50five'), args.card.printedNumber, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
                     resolve(true);
                 }, (_error) => {
                   resolve(false);
@@ -504,7 +578,7 @@ class Chargepoint extends Homey.Device {
           .registerRunListener(async (args, state) => {
             console.log('attempt to stop the active charge session');
             return new Promise((resolve, reject) => {
-                MNM.stopSession(this.getData().id, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
+                FF.stopSession(this.getStoreValue('50five'), this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
                     resolve(true);
                 }, (_error) => {
                   resolve(false);

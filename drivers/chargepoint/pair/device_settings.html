@@ -1,7 +1,6 @@
 
     <h1>Please select your chargepoint settings</h1>
-    <p>You can now select the chargecard to use with this charge point<br />
-    Selecting the car from your list enables power estimates in Homey</p>
+    <p>You can now select the chargecard to use with this charge point</p>
 
     <fieldset>
         <legend>Setup you charge point</legend>
@@ -10,30 +9,20 @@
             <label for="card">Charge card</label>
             <select id="card" value="" ></select>
         </div>
-        <!--div class="field row">
-            <label for="car">Attached car</label>
-            <select id="car" value="" ></select>
-        </div-->
-
     </fieldset>
 
     <button id="saveconfig" class="right">Save and add charge point</button>
 
     <script type="text/javascript">
         var cardElement = document.getElementById('card');
-        //var carElement = document.getElementById('car');
         var saveElement = document.getElementById('saveconfig');
         var chargePoint;
 
         saveElement.addEventListener('click', function(e) {
             let card = {
                 name:cardElement.options[cardElement.selectedIndex].text,
-                rfid:cardElement.value
+                printedNumber:cardElement.value
             }
-            // let car = {
-            //     name:carElement.options[carElement.selectedIndex].text,
-            //     battery:carElement.value
-            // }
             let device_settings = {
                 card:card
             };
@@ -62,20 +51,10 @@
             cards.forEach(card =>{
                 var option = document.createElement("option");
             	option.text = card.name+' ('+card.printedNumber+')';
-	            option.value = card.rfid;
+	            option.value = card.printedNumber;
                 cardElement.add(option,null);
             })
         });
-
-        // Homey.on('loadcars', function(cars, callback){
-        //     cars.forEach(car =>{
-        //         var option = document.createElement("option");
-        //     	option.text = car.name+' ('+car.battery+' kW)';
-	    //         option.value = car.battery;
-        //         carElement.add(option,null);
-        //     });
-
-        // });
 
         Homey.getViewStoreValue( 'add_devices', 'devices', function( err, result ){
             console.log(result);

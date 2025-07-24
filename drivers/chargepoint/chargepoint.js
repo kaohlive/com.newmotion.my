@@ -6,6 +6,11 @@ const round = Math.round
 module.exports = {}
 
 module.exports.enhance = function (data) {
+    
+    if (!data) {
+        throw new Error("Invalid data object passed to enhance()");
+    }
+
     data.e = { connectors: {} }
     data.e.total = 1;
     data.e.free = data.STATUS === '0' ? 1 : 0;
@@ -25,6 +30,7 @@ module.exports.enhance = function (data) {
     data.e.price = 0
     data.e.availablepower = 0
     data.e.maxpower = 0
+    data.e.latestOnlineStatus = true;
     return data
 }
 
