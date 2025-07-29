@@ -139,5 +139,8 @@
   },
   "3.9.1": {
     "en": "Changed passive consumption value"
+  },
+  "4.0.0": {
+    "en": "Rework beta for 50five support, will break Shell recharge users"
   }
 }
