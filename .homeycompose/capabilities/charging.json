@@ -1,8 +1,8 @@
 {
   "type": "boolean",
   "title": {
-    "en": "Charging",
-    "nl": "Laden"
+    "en": "Charging active",
+    "nl": "Aan het laden"
   },
   "getable": true,
   "setable": false,
