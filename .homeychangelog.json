@@ -145,5 +145,8 @@
   },
   "4.0.1": {
     "en": "Added support for resolving authorized carge cards. fixing flow cards using cards"
+  },
+  "4.0.2": {
+    "en": "Additional logging details for upgrade debugging"
   }
 }
