@@ -142,5 +142,8 @@
   },
   "4.0.0": {
     "en": "Rework beta for 50five support, will break Shell recharge users"
+  },
+  "4.0.1": {
+    "en": "Added support for resolving authorized carge cards. fixing flow cards using cards"
   }
 }
