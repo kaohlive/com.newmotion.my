@@ -83,7 +83,7 @@ class Chargepoint extends Homey.Device {
         if(value)
         {
             const printedNumber=this.getSetting('card_printedNumber')
-            this.log('Start new charging session, using settings card: '+printedNumber);
+            this.log('Start new charging session, using settings card: '+printedNumber.slice(0, -6).replace(/./g, '*') + printedNumber.slice(-6));
             const chargePoint = await this.getStoreValue('50five');
             await FF.startSession(chargePoint, chargePoint.channel, this.getSetting('card_printedNumber'), this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
             this.pause_update_loop(20000)
@@ -104,6 +104,15 @@ class Chargepoint extends Homey.Device {
             }, t);
         });
      }
+
+    onAdded() {
+        //Lets persist the printedNumber of the selected card during setup into a setting
+        const point =this.getData();
+        this.setSettings({
+            card_printedNumber:point.card.printedNumber
+        });
+        Console.log('Stored selected card into device settings')
+    }
 
     onDeleted() {
         if (this._timer) {
@@ -412,12 +421,12 @@ class Chargepoint extends Homey.Device {
                 const cardmatch = sessions[0]["5"].match(/<\/i>\s*(.+)$/);
 
                 if (cardmatch && cardmatch[1]) {
-                    console.log('Extracted value:', cardmatch[1].trim());
+                    console.log('Extracted card value:', cardmatch[1].trim().slice(0, -6).replace(/./g, '*') + cardmatch[1].trim().slice(-6));
                 } else {
                     console.log('No match found.');
                 }
 
-                this.setIfHasCapability('last_session_card', cardmatch[1]);
+                this.setIfHasCapability('last_session_card', cardmatch[1].trim());
                 this.setIfHasCapability('meter_consumedmonth', sum);
             } else {
                 this.setIfHasCapability('meter_consumedlast', 0);
@@ -437,7 +446,6 @@ class Chargepoint extends Homey.Device {
         }
     }
 
-    //TODO: How are we going to retrieve the list of authorized cards?
     myChargeCards() {
         console.log('user wants a list of cards');
         return new Promise(async (resolve) => {
@@ -445,7 +453,7 @@ class Chargepoint extends Homey.Device {
             .then(token => {
                 FF.cards(token).then(function (cards) {
                     const mycards = cards.map((card) => {
-                        card.formattedName = card.name +' ('+card.printedNumber+')';
+                        card.formattedName = card.name +' ('+card.printedNumber.slice(0, -6).replace(/./g, '*') + card.printedNumber.slice(-6);+')';
                         card.printedNumber = card.printedNumber;
                         return card;
                     });
@@ -502,6 +510,7 @@ class Chargepoint extends Homey.Device {
         });
     }
 
+    //Deprecated
     setupUpdateChargespeed() {
         this._UpdateChargeSpeedCard
           .registerRunListener(async (args, state) => {
@@ -522,17 +531,9 @@ class Chargepoint extends Homey.Device {
           .registerRunListener(async (args, state) => {
             console.log('attempt to start charging using card: '+args.card.name);
             return new Promise((resolve, reject) => {
-                //console.log('store new card to device');
-                console.log('store new linked card to device');
-                this.setStoreValue('card',args.card);
-                console.log('update device settings');
-                this.setSettings({
-                    card_printedNumber:args.card.printedNumber,
-                    charge_card:args.card.printedNumber,
-                    charge_capacity:args.chargespeed
-                });
                 console.log('now send the charge command');
-                FF.startSession(this.getStoreValue('50five'), args.card.printedNumber, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
+                const chargePoint = this.getStoreValue('50five');
+                FF.startSession(chargePoint, chargePoint.channel, args.card.printedNumber, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
                     resolve(true);
                 }, (_error) => {
                   resolve(false);
@@ -551,16 +552,9 @@ class Chargepoint extends Homey.Device {
           .registerRunListener(async (args, state) => {
             console.log('attempt to start charging using card: '+args.card.name);
             return new Promise((resolve, reject) => {
-                console.log('store new linked card to device');
-                this.setStoreValue('card',args.card);
-                console.log('update device settings');
-                this.setSettings({
-                    card_printedNumber:args.card.printedNumber,
-                    charge_card:args.card.printedNumber,
-                    charge_capacity:args.chargespeed
-                });
                 console.log('now send the charge command');
-                FF.startSession(this.getStoreValue('50five'), args.card.printedNumber, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
+                const chargePoint = this.getStoreValue('50five');
+                FF.startSession(chargePoint, chargePoint.channel, args.card.printedNumber, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
                     resolve(true);
                 }, (_error) => {
                   resolve(false);

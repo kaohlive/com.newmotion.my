@@ -77,37 +77,18 @@ module.exports.buildDevice = function (device, point) {
         }
     }
 
-    if(point._embedded.evses[0].connectors.length>0)
+    if(point)
         device.capabilities.push('onoff')
         device.capabilitiesOptions['onoff'] = {
             'uiQuickAction': false
         }
 
-    if (point._embedded.evses[0].connectors.length == 1) {
+    if (point) {
         //We show the occupied and charging state if its a single connector chargepoint
         device.capabilities.push('occupied')
         device.capabilities.push('charging')
         device.capabilities.push('active_card')
-    } else {
-        //So these only show up if we have more than 1 connector on the charge point
-        device.capabilities.push('connectors.free')
-        device.capabilities.push('connectors.total')
-
-        device.capabilitiesOptions['connectors.free'] = {
-            'title': {
-                'en': 'Free',
-                'nl': 'Vrij'
-            }
-        }
-
-        device.capabilitiesOptions['connectors.total'] = {
-            'title': {
-                'en': 'Total',
-                'nl': 'Totaal'
-            },
-            'preventInsights': true
-        }
-    }
+    } 
     //Add the power capabilities
     device.capabilities.push('measure_power')
     device.capabilities.push('power.max')
