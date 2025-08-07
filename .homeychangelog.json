@@ -151,5 +151,8 @@
   },
   "4.1.0": {
     "en": "Included the rebranding to 50five"
+  },
+  "4.1.1": {
+    "en": "Bug fix on different serial patterns"
   }
 }
