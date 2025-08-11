@@ -358,17 +358,25 @@ class Chargepoint extends Homey.Device {
                     }
                 }
                 if(this.hasCapability('measure_power')) {
-                    const intervalMeterValue = await this.getStoreValue('meter_power_interval_cache');
-                    let deltaDeliverd = currentPowerDelivered - intervalMeterValue;
-                    if(deltaDeliverd==0)
+                    let MeterValue_kW = last_info.MOM_POWER_KW;
+                    if(MeterValue_kW==null || MeterValue_kW ==0)
                     {
-                        console.log('✅ 0.13: No power deliverd, set usage to 0 ');
-                        await this.setCapabilityValue('measure_power', 0);
+                        const intervalMeterValue = await this.getStoreValue('meter_power_interval_cache');
+                        let deltaDeliverd = currentPowerDelivered - intervalMeterValue;
+                        if(deltaDeliverd==0)
+                        {
+                            console.log('✅ 0.13: No power deliverd, set usage to 0 ');
+                            await this.setCapabilityValue('measure_power', 0);
+                        } else {
+                            let average_kW = deltaDeliverd / (2 / 60);
+                            await this.setCapabilityValue('measure_power', (average_kW*1000));
+                            await this.setStoreValue('meter_power_interval_cache',currentPowerDelivered);
+                            console.log('✅ 0.13: Updated power usage to '+(average_kW*1000)+' delta:'+deltaDeliverd+' based on prev:'+intervalMeterValue+' new:'+currentPowerDelivered);
+                        }
                     } else {
-                        let average_kW = deltaDeliverd / (2 / 60);
-                        await this.setCapabilityValue('measure_power', (average_kW*1000));
+                        await this.setCapabilityValue('measure_power', (MeterValue_kW*1000));
                         await this.setStoreValue('meter_power_interval_cache',currentPowerDelivered);
-                        console.log('✅ 0.13: Updated power usage to '+(average_kW*1000)+' delta:'+deltaDeliverd+' based on prev:'+intervalMeterValue+' new:'+currentPowerDelivered);
+                        console.log('✅ 0.13: Updated power usage to '+(MeterValue_kW*1000)+' collected from API');
                     }
                 }                    
             } else {
@@ -384,21 +392,26 @@ class Chargepoint extends Homey.Device {
             console.log('❌ 0.11: error getting power measurements: '+err.message);
         }
 
+        //Todo: Rework to new session source
+        // this.driver.ready().then(() => {
+        //     console.log('Trigger changed event, something changed.');
+        //     this.driver.triggerChanged( this, {}, {} );
+        // });
+
         console.info('now retrieve the current months charge sessions')
         var date = new Date();
         date.setHours(23, 59, 59, 0); //End Of day
         //Get from the first of this month till now
-
-        //Todo: Rework to new session source
-               this.driver.ready().then(() => {
-                    console.log('Trigger changed event, something changed.');
-                    this.driver.triggerChanged( this, {}, {} );
-                });
         await FF.TransactionHistory(fresh_token, new Date(date.getFullYear(), date.getMonth(), 1), date).then(sessions => {
             if(sessions.length>0)
             {
                 //console.log('Update device loaded this month sessions:'+JSON.stringify(sessions));
-                var sum = sessions.reduce((accumulator, currentsession) => accumulator + Number(currentsession["6"]), 0);
+                var sum = sessions.reduce((accumulator, currentsession) => {
+                    //Ensure we use . comma separator for lcoales that use ,
+                    const value = currentsession["6"].replace(',', '.');
+                    return accumulator + Number(value)
+                }, 0);
+                
                 
                 // Step 2: Extract href using regex
                 const match = sessions[0]["0"].match(/href\s*=\s*"([^"]+)"/);
@@ -414,8 +427,8 @@ class Chargepoint extends Homey.Device {
                 {
                     this.setStoreValue('lastsessionid',lastsessionid);
                 }
-                console.log('Lastsession ['+lastsessionid+'] was '+sessions[0]["6"]+' kWh, This months session total is '+sum+' kWh')
-                this.setIfHasCapability('meter_consumedlast', Number(sessions[0]["6"]));
+                console.log('Lastsession ['+lastsessionid+'] was '+sessions[0]["6"].replace(',', '.')+' kWh, This months session total is '+sum+' kWh')
+                this.setIfHasCapability('meter_consumedlast', Number(sessions[0]["6"].replace(',', '.')));
                 
                 // Step 2: Extract text after </i>
                 const cardmatch = sessions[0]["5"].match(/<\/i>\s*(.+)$/);
