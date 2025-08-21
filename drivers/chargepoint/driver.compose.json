@@ -10,7 +10,8 @@
   },
   "class": "evcharger",
   "energy": {
-    "evCharger": true
+    "evCharger": true,
+    "meterPowerImportedCapability": "meter_power"
   },
   "capabilities": [ "evcharger_charging_state", "evcharger_charging" ],
   "repair": [

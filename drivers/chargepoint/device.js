@@ -35,6 +35,9 @@ class Chargepoint extends Homey.Device {
         //New capabilities to add
         if(!this.hasCapability('last_session_card'))
             await this.addCapability('last_session_card');  
+        
+        if(!this.hasCapability('meter_consumedcurrent'))
+            await this.addCapability('meter_consumedcurrent'); 
         if(!this.hasCapability('meter_consumedlast'))
             await this.addCapability('meter_consumedlast');  
         if(!this.hasCapability('meter_consumedmonth'))
@@ -337,12 +340,20 @@ class Chargepoint extends Homey.Device {
         try {
             console.log('✅ 0.10: Chargepoint power measurement details: ');
             let session_details = await FF.SessionLog(chargePoint,fresh_token);
-            let last_info = session_details[session_details.length - 1];
+            
+            //console.dir(session_details, { depth: null });
+            let last_info = session_details[0];
             console.log(last_info )
             console.log('✅ 0.11: Chargepoint session details retrieved: last '+session_details.length);
             if(last_info.STATUS=='10000')
             {
                 let currentPowerDelivered=last_info.TRANS_ENERGY_DELIVERED_KWH;
+                if(currentPowerDelivered===null)
+                    currentPowerDelivered=0;
+                if(this.hasCapability('meter_consumedcurrent')) {
+                    await this.setCapabilityValue('meter_consumedcurrent', currentPowerDelivered);
+                }
+                
                 //Now add the delta of the current session to the status at the start of the session
                 if(this.hasCapability('meter_power')) {
                     const startMeterValue = await this.getStoreValue('meter_power_cache');
@@ -387,16 +398,13 @@ class Chargepoint extends Homey.Device {
                 if(this.hasCapability('measure_power')) {
                      await this.setCapabilityValue('measure_power', 0);
                 }
+                if(this.hasCapability('meter_consumedcurrent')) {
+                    await this.setCapabilityValue('meter_consumedcurrent', 0);
+                }
             }
         } catch (err) {
             console.log('❌ 0.11: error getting power measurements: '+err.message);
         }
-
-        //Todo: Rework to new session source
-        // this.driver.ready().then(() => {
-        //     console.log('Trigger changed event, something changed.');
-        //     this.driver.triggerChanged( this, {}, {} );
-        // });
 
         console.info('now retrieve the current months charge sessions')
         var date = new Date();

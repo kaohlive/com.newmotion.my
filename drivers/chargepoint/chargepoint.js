@@ -9,7 +9,7 @@ module.exports.enhance = function (data) {
     
     if (!data) {
         throw new Error("Invalid data object passed to enhance()");
-    }
+    } 
 
     data.e = { connectors: {} }
     data.e.total = 1;
@@ -30,7 +30,7 @@ module.exports.enhance = function (data) {
     data.e.price = 0
     data.e.availablepower = 0
     data.e.maxpower = 0
-    data.e.latestOnlineStatus = true;
+    data.e.latestOnlineStatus = !(data.STATUS === '2000000');
     return data
 }
 

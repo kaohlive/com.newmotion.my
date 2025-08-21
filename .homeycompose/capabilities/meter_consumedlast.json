@@ -10,10 +10,10 @@
   "insights": true,
   "desc": {
     "en": "The power charged in the last sessions",
-    "nl": "Het vermogen welke in de laadse sessie is gebruikt"
+    "nl": "Het vermogen welke in de laatste sessie is gebruikt"
   },
   "chartType": "stepLine",
-  "decimals": 0,
+  "decimals": 1,
   "getable": true,
   "setable": false,
   "uiComponent": "sensor",

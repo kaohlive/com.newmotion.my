@@ -1,16 +1,16 @@
 {
   "type": "number",
   "title": {
-    "en": "Total this month",
-    "nl": "Totaal deze maand"
+    "en": "Current session usage",
+    "nl": "Huidige sessie verbruik"
   },
   "units": {
     "en": "kWh"
   },
   "insights": true,
   "desc": {
-    "en": "Session total in kWh this month",
-    "nl": "Sessie totaal in kWh deze maand"
+    "en": "The power charged in the current sessions",
+    "nl": "Het vermogen welke in de huidige sessie is gebruikt"
   },
   "chartType": "stepLine",
   "decimals": 1,
