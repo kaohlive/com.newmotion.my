@@ -7,7 +7,7 @@
   },
   "sdk": 3,
   "brandColor": "#82BC41",
-  "version": "4.1.2",
+  "version": "4.1.3",
   "compatibility": ">=12.4.5",
   "author": {
     "name": "Kaoh",
@@ -632,7 +632,8 @@
       },
       "class": "evcharger",
       "energy": {
-        "evCharger": true
+        "evCharger": true,
+        "meterPowerImportedCapability": "meter_power"
       },
       "capabilities": [
         "evcharger_charging_state",
@@ -803,6 +804,27 @@
       "uiComponent": "sensor",
       "icon": "/assets/power.svg"
     },
+    "meter_consumedcurrent": {
+      "type": "number",
+      "title": {
+        "en": "Current session usage",
+        "nl": "Huidige sessie verbruik"
+      },
+      "units": {
+        "en": "kWh"
+      },
+      "insights": true,
+      "desc": {
+        "en": "The power charged in the current sessions",
+        "nl": "Het vermogen welke in de huidige sessie is gebruikt"
+      },
+      "chartType": "stepLine",
+      "decimals": 1,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/power.svg"
+    },
     "meter_consumedlast": {
       "type": "number",
       "title": {
@@ -815,10 +837,10 @@
       "insights": true,
       "desc": {
         "en": "The power charged in the last sessions",
-        "nl": "Het vermogen welke in de laadse sessie is gebruikt"
+        "nl": "Het vermogen welke in de laatste sessie is gebruikt"
       },
       "chartType": "stepLine",
-      "decimals": 0,
+      "decimals": 1,
       "getable": true,
       "setable": false,
       "uiComponent": "sensor",
@@ -839,7 +861,7 @@
         "nl": "Sessie totaal in kWh deze maand"
       },
       "chartType": "stepLine",
-      "decimals": 0,
+      "decimals": 1,
       "getable": true,
       "setable": false,
       "uiComponent": "sensor",
