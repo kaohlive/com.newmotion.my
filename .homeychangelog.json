@@ -160,5 +160,8 @@
   },
   "4.1.3": {
     "en": "Improved current session consumption extraction and capability"
+  },
+  "4.1.4": {
+    "en": "Bug fix for month session total"
   }
 }
