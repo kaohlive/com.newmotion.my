@@ -22,11 +22,12 @@
     <script type="text/javascript">
         var usernameElement = document.getElementById('username');
         var passwordElement = document.getElementById('password');
+        var urlElement = document.getElementById('url');
         var saveElement = document.getElementById('save');
 
         saveElement.addEventListener('click', function(e) {
             Homey.showLoadingOverlay();
-            Homey.emit('testlogin', { 'username':usernameElement.value,'password':passwordElement.value }).then(function (result) {
+            Homey.emit('testlogin', { 'username':usernameElement.value,'password':passwordElement.value, 'url': urlElement.value }).then(function (result) {
                 console.log('Testcomplete result: '+result);
                 if(result)
                 {
@@ -44,6 +45,7 @@
         Homey.on('loadaccount', function(credentials, callback){
             usernameElement.value=credentials.username;
             passwordElement.value=credentials.password;
+            urlElement.value=credentials.url;
         });
 
     </script>

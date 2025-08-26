@@ -12,6 +12,8 @@ function mobile() {
 class ChargepointDriver extends Homey.Driver {
 
     onInit() {
+        this.chargepointService = new MNM.ChargePointService(this.getCredentials);
+
         this._flowTriggerSessionStart = this.homey.flow.getDeviceTriggerCard('sessionstart').registerRunListener(async ( args, state ) => {
 			return true;
 		  });
@@ -51,6 +53,22 @@ class ChargepointDriver extends Homey.Driver {
 		  });  
     }
 
+    getCredentials = () => {
+        var cred_username = this.homey.settings.get('user_email');
+        var cred_secure_password = this.homey.settings.get('user_password');
+        var cred_url = this.homey.settings.get('user_url');
+
+        if(!cred_url){
+            cred_url = 'https://50five-snl.evc-net.com';
+        }
+
+        return {
+            cred_username,
+            cred_secure_password,
+            cred_url
+        }
+    };
+
    async onRepair(session, device) {
         // Argument session is a PairSocket, similar to Driver.onPair
         // Argument device is a Homey.Device that's being repaired
@@ -59,12 +77,14 @@ class ChargepointDriver extends Homey.Driver {
             console.log('Login page of repair is showing, send credentials');
             //Send the stored credentials to the 
             var username = this.homey.settings.get('user_email');
-            var cryptedpassword = this.homey.settings.get('user_password');
+            var cryptedpassword = this.homey.settings.get('user_password');            
+            var cred_url = this.homey.settings.get('user_url');
+
             try {
                 plainpass = await HomeyCrypt.decrypt(cryptedpassword,username);
-                session.emit('loadaccount', {'username': username,'password': plainpass});
+                session.emit('loadaccount', {'username': username,'password': plainpass, 'url': cred_url});
             } catch (err) {
-                session.emit('loadaccount', {'username': username,'password': ''})
+                session.emit('loadaccount', {'username': username,'password': '', 'url': cred_url})
             }
         });
 
@@ -76,11 +96,12 @@ class ChargepointDriver extends Homey.Driver {
                 //console.log(JSON.stringify(cryptedpass));
                 this.homey.settings.set('user_password',cryptedpass);
             }) 
-            console.log('password encrypted, credentials stored. Clear existing tokens.');               
+            console.log('password encrypted, credentials stored. Clear existing tokens.');            
+            this.homey.settings.set('user_url', data.url);     
             //Now we have the encrypted password stored we can start testing the info
-            MNM.clearAuthCookie();
+            this.chargepointService.clearAuthCookie();
             console.log('Test new credentials and get a fresh token.');               
-            var testresult = await MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+            var testresult = await this.chargepointService.getAuthCookie()
             .then(token => {
                 if(token==='')
                 {
@@ -114,22 +135,22 @@ class ChargepointDriver extends Homey.Driver {
                 //Send the stored credentials to the 
                 var username = this.homey.settings.get('user_email');
                 var cryptedpassword = this.homey.settings.get('user_password');
+                var cred_url = this.homey.settings.get('user_url');
+
                 try {
                     plainpass = await HomeyCrypt.decrypt(cryptedpassword,username);
-                    session.emit('loadaccount', {'username': username,'password': plainpass});
+                    session.emit('loadaccount', {'username': username,'password': plainpass, 'url': cred_url});
                 } catch (err) {
-                    session.emit('loadaccount', {'username': username,'password': ''})
+                    session.emit('loadaccount', {'username': username,'password': '', 'url': cred_url})
                 }
             };
             if(viewId === 'device_settings') {
                 console.log('Allow the user to select card');
-                MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(token => {
-                    MNM.cards(token).then(function (cards) {
-                        const mycards = cards.map((card) => {
-                            return card;
-                        });
-                        session.emit('loadcards', mycards);
+                this.chargepointService.cards().then(function (cards) {
+                    const mycards = cards.map((card) => {
+                        return card;
                     });
+                    session.emit('loadcards', mycards);
                 });
             };
         });
@@ -142,11 +163,12 @@ class ChargepointDriver extends Homey.Driver {
                 //console.log(JSON.stringify(cryptedpass));
                 this.homey.settings.set('user_password',cryptedpass);
             }) 
-            console.log('password encrypted, credentials stored. Clear existing tokens.');               
+            console.log('password encrypted, credentials stored. Clear existing tokens.');
+            this.homey.settings.set('user_url', data.url);           
             //Now we have the encrypted password stored we can start testing the info
-            MNM.clearAuthCookie();
+            this.chargepointService.clearAuthCookie();
             console.log('Test new credentials and get a fresh token.');               
-            var testresult = await MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+            var testresult = await this.chargepointService.getAuthCookie()
             .then(token => {
                 if(token==='')
                 {
@@ -172,9 +194,7 @@ class ChargepointDriver extends Homey.Driver {
             console.log('Now find all our chargepoints from my account');
             session.showView('discover_chargepoints');
             try{
-            MNM.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
-              .then(token => {
-                MNM.list(token)
+                this.chargepointService.list()
                     .then(function (points) {
                         //A charge point that we could not get details for might be returned as null
                         const devices = points.filter(function(device) {
@@ -214,7 +234,7 @@ class ChargepointDriver extends Homey.Driver {
                         session.showView('list_devices');
                     })
                     .catch((err) => { console.log('Get chargepoints, '+err); session.showView('error');})
-                })
+                
                 .catch((err) => { console.log('Get token, '+err); session.showView('error');})
             }catch(err){
                 console.log('Generic error:'+err);

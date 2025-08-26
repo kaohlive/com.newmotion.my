@@ -7,6 +7,7 @@ const CP = require('./chargepoint')
 class Chargepoint extends Homey.Device {
 
     async onInit() {
+        this.chargepointService = new FF.ChargePointService(this.getCredentials);
 
         this.updateDevice();
         this.start_update_loop();
@@ -63,6 +64,22 @@ class Chargepoint extends Homey.Device {
         }
     }
 
+    getCredentials = () => {
+        var cred_username = this.homey.settings.get('user_email');
+        var cred_secure_password = this.homey.settings.get('user_password');
+        var cred_url = this.homey.settings.get('user_url');
+
+        if(!cred_url){
+            cred_url = 'https://50five-snl.evc-net.com';
+        }
+        
+        return {
+            cred_username,
+            cred_secure_password,
+            cred_url
+        }
+    };
+
     async onSettings({ oldSettings, newSettings, changedKeys }) {
         if(changedKeys.find(function(str) { return str == 'include_power'}))
             if(newSettings['include_power']) {
@@ -88,14 +105,14 @@ class Chargepoint extends Homey.Device {
             const printedNumber=this.getSetting('card_printedNumber')
             this.log('Start new charging session, using settings card: '+printedNumber.slice(0, -6).replace(/./g, '*') + printedNumber.slice(-6));
             const chargePoint = await this.getStoreValue('50five');
-            await FF.startSession(chargePoint, chargePoint.channel, this.getSetting('card_printedNumber'), this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+            await this.chargepointService.startSession(chargePoint, chargePoint.channel, this.getSetting('card_printedNumber'))
             this.pause_update_loop(20000)
         }
         else
         {
             this.log('End charging session');
             const chargePoint = await this.getStoreValue('50five');
-            await FF.stopSession(chargePoint, chargePoint.channel, this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+            await this.chargepointService.stopSession(chargePoint, chargePoint.channel)
             this.pause_update_loop(10000)
         }
     }
@@ -147,7 +164,7 @@ class Chargepoint extends Homey.Device {
     async updateDevice() {
         console.log('🔍 0.0: Lets update our charegepoint status');
         const settings = this.getSettings()
-        let fresh_token = await FF.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
+        let fresh_token = await this.chargepointService.getAuthCookie()
         if(fresh_token=='')
         {
             console.log('❌ 0.0: could not update device state due to no fresh token available');
@@ -168,7 +185,7 @@ class Chargepoint extends Homey.Device {
                 chargePoint = await this.getStoreValue('50five');
             } else {
                 console.log('✅ 0.2.1: Chargepoint needs 50five upgrade, lets locate its base: ');
-                const point_base = await FF(serial, fresh_token);
+                const point_base = await this.chargepointService.getSinglePointBySerial(serial);
                 console.dir(point_base, { depth: null });
                 if(point_base==null) {
                     console.log('⚠️ 0.2.1: No chargepoint data could be located in your account');
@@ -180,8 +197,8 @@ class Chargepoint extends Homey.Device {
                 chargePoint=point_base;
             }
             console.log('🔍 0.3: Attempt to get status of chargepoint device '+chargePoint.idx);
-            let triggerRefresh = await FF.requestUpdate(chargePoint, fresh_token);
-            let point_details = await FF.pointDetails(chargePoint, fresh_token);
+            let triggerRefresh = await this.chargepointService.requestUpdate(chargePoint);
+            let point_details = await this.chargepointService.pointDetails(chargePoint);
             if(point_details) {
                 //Lets perform our pre-analysis on the status to fill our attributes
                 data = CP.enhance(point_details);
@@ -339,7 +356,7 @@ class Chargepoint extends Homey.Device {
         console.info('🔍 Get active session power delivered')
         try {
             console.log('✅ 0.10: Chargepoint power measurement details: ');
-            let session_details = await FF.SessionLog(chargePoint,fresh_token);
+            let session_details = await this.chargepointService.SessionLog(chargePoint);
             
             //console.dir(session_details, { depth: null });
             let last_info = session_details[0];
@@ -410,7 +427,7 @@ class Chargepoint extends Homey.Device {
         var date = new Date();
         date.setHours(23, 59, 59, 0); //End Of day
         //Get from the first of this month till now
-        await FF.TransactionHistory(fresh_token, new Date(date.getFullYear(), date.getMonth(), 1), date).then(sessions => {
+        await this.chargepointService.TransactionHistory(new Date(date.getFullYear(), date.getMonth(), 1), date).then(sessions => {
             if(sessions.length>0)
             {
                 //console.log('Update device loaded this month sessions:'+JSON.stringify(sessions));
@@ -470,17 +487,14 @@ class Chargepoint extends Homey.Device {
     myChargeCards() {
         console.log('user wants a list of cards');
         return new Promise(async (resolve) => {
-            FF.getAuthCookie(this.homey.settings.get('user_email'),this.homey.settings.get('user_password'))
-            .then(token => {
-                FF.cards(token).then(function (cards) {
-                    const mycards = cards.map((card) => {
-                        card.formattedName = card.name +' ('+card.printedNumber.slice(0, -6).replace(/./g, '*') + card.printedNumber.slice(-6);+')';
-                        card.printedNumber = card.printedNumber;
-                        return card;
-                    });
-                    return resolve(mycards);
+            this.chargepointService.cards().then(function (cards) {
+                const mycards = cards.map((card) => {
+                    card.formattedName = card.name +' ('+card.printedNumber.slice(0, -6).replace(/./g, '*') + card.printedNumber.slice(-6);+')';
+                    card.printedNumber = card.printedNumber;
+                    return card;
                 });
-            })
+                return resolve(mycards);
+            });
         });
     }
 
@@ -554,7 +568,7 @@ class Chargepoint extends Homey.Device {
             return new Promise((resolve, reject) => {
                 console.log('now send the charge command');
                 const chargePoint = this.getStoreValue('50five');
-                FF.startSession(chargePoint, chargePoint.channel, args.card.printedNumber, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
+                this.chargepointService.startSession(chargePoint, chargePoint.channel, args.card.printedNumber).then(() => {
                     resolve(true);
                 }, (_error) => {
                   resolve(false);
@@ -575,7 +589,7 @@ class Chargepoint extends Homey.Device {
             return new Promise((resolve, reject) => {
                 console.log('now send the charge command');
                 const chargePoint = this.getStoreValue('50five');
-                FF.startSession(chargePoint, chargePoint.channel, args.card.printedNumber, this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
+                this.chargepointService.startSession(chargePoint, chargePoint.channel, args.card.printedNumber).then(() => {
                     resolve(true);
                 }, (_error) => {
                   resolve(false);
@@ -593,7 +607,7 @@ class Chargepoint extends Homey.Device {
           .registerRunListener(async (args, state) => {
             console.log('attempt to stop the active charge session');
             return new Promise((resolve, reject) => {
-                FF.stopSession(this.getStoreValue('50five'), this.homey.settings.get('user_email'),this.homey.settings.get('user_password')).then(() => {
+                this.chargepointService.stopSession(this.getStoreValue('50five')).then(() => {
                     resolve(true);
                 }, (_error) => {
                   resolve(false);
