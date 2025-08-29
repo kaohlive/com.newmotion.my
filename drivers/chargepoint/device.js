@@ -359,8 +359,8 @@ class Chargepoint extends Homey.Device {
             let session_details = await this.chargepointService.SessionLog(chargePoint);
             
             //console.dir(session_details, { depth: null });
-            let last_info = session_details[0];
-            console.log(last_info )
+            let last_info = session_details.slice(0,2);
+            console.dir(last_info )
             console.log('✅ 0.11: Chargepoint session details retrieved: last '+session_details.length);
             if(last_info.STATUS=='10000')
             {
@@ -607,11 +607,13 @@ class Chargepoint extends Homey.Device {
           .registerRunListener(async (args, state) => {
             console.log('attempt to stop the active charge session');
             return new Promise((resolve, reject) => {
-                this.chargepointService.stopSession(this.getStoreValue('50five')).then(() => {
+                const chargePoint = this.getStoreValue('50five');
+                this.chargepointService.stopSession(chargePoint, chargePoint.channel).then(() => {
                     resolve(true);
                 }, (_error) => {
                   resolve(false);
                 });
+                this.pause_update_loop(10000)
             });
           });
       }
