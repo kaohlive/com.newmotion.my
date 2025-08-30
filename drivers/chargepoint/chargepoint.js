@@ -13,19 +13,22 @@ module.exports.enhance = function (data) {
 
     data.e = { connectors: {} }
     data.e.total = 1;
-    data.e.free = data.STATUS === '0' ? 1 : 0;
+    //Preparing is when the cable is in and hooked, but no active session started
+    data.e.preparingEvses = data.NOTIFICATION === 'Preparing transaction' ? 1 : data.NOTIFICATION === 'Transactie voorbereiden' ? 1 : 0;
+    //Status is also 0 when preparing, take that in account
+    data.e.free = data.STATUS === '0' ? data.e.preparingEvses>0 ? 0 : 1 : 0;
     //Charging is truly drawing power
     data.e.charging = data.STATUS === '10000' ? 1 : 0;
-    //Preparing is when the cable is in and hooked, but no active session started
-    data.e.preparingEvses = data.Notification === 'Preparing transaction' ? 1 : 0;
     //The overal duration of a connected connector
-    data.e.occupied = data.STATUS !== '0' ? 1 : 0;
+    data.e.occupied = data.STATUS !== '0' ? 1 : data.e.preparingEvses>0 ? 0 : 1;
     //Suspended is the status when there is a EV connected with an active session but it is not charging
     data.e.suspended = data.STATUS === '50000' ? 1 : 0;
     //This is a Error like state that prevents new sessions from being started
     data.e.blocked = data.STATUS === '20000' ? 1 : 0;
     //We now grab the active card from the API statusdetail object to accuratly reflect the used card, this should work also when a card was swiped.
     data.e.cardname = data.CARDID;
+    //So if we are occupied, does that mean a session is active?
+    data.e.activeSession = (data.e.free == 0 && data.e.preparingEvses == 0)
     //These are more deprecated values, set them to 0    
     data.e.price = 0
     data.e.availablepower = 0

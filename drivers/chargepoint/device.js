@@ -161,6 +161,103 @@ class Chargepoint extends Homey.Device {
     }
 
 
+    extractTransactionData(eventData) {
+        const meterStopMatch = eventData.match(/Meter stop:\s*(\d+)\s*Wh/);
+        const meterStartMatch = eventData.match(/Meter start:\s*(\d+)\s*Wh/);
+        const reasonMatch = eventData.match(/Reason:\s*(\w+)/);
+        const acceptedMatch = eventData.match(/Accepted:\s*(\w+)/);
+        const infoMatch = eventData.match(/Info:\s*(\w+)/);
+
+        return {
+            meterStopWh: meterStopMatch ? parseInt(meterStopMatch[1], 10) : null,
+            meterStartWh: meterStartMatch ? parseInt(meterStartMatch[1], 10) : null,
+            reason: reasonMatch ? reasonMatch[1] : null,
+            accepted: acceptedMatch ? acceptedMatch[1] : null,
+            info: infoMatch ? infoMatch[1] : null
+        };
+    }
+
+    async getLogLinedetailsAndSetMeters(chargePoint) {
+        console.info('✅ device capabilities updated')
+        console.info('🔍 Get active session power delivered')
+        let lastEvent;
+        try {
+            console.log('✅ 0.10: Chargepoint power measurement details: ');
+            let session_details = await this.chargepointService.SessionLog(chargePoint);
+            
+            //We need to analyze the last two lines, if state is ready
+            let last_info = session_details.slice(0,2);
+            //Get the last event reason if available
+            lastEvent = this.extractTransactionData(session_details[2].EVENT_DATA);
+
+            console.dir(last_info )
+            console.dir(lastEvent)
+            console.log('✅ 0.11: Chargepoint session details retrieved: last '+session_details.length);
+            if(last_info[0].STATUS=='10000')
+            {
+                let currentPowerDelivered=Math.max(...last_info.map(item => item.TRANS_ENERGY_DELIVERED_KWH || 0));
+                //let currentPowerDelivered=last_info.TRANS_ENERGY_DELIVERED_KWH;
+                if(currentPowerDelivered===null)
+                    currentPowerDelivered=0;
+                if(this.hasCapability('meter_consumedcurrent')) {
+                    await this.setCapabilityValue('meter_consumedcurrent', currentPowerDelivered);
+                }
+                
+                //Now add the delta of the current session to the status at the start of the session
+                if(this.hasCapability('meter_power')) {
+                    const startMeterValue = await this.getStoreValue('meter_power_cache');
+                    if(startMeterValue!==null)
+                    {
+                        await this.setCapabilityValue('meter_power', (startMeterValue+currentPowerDelivered));
+                        console.log('✅ 0.12: Updated power meter to, was on start ['+startMeterValue+'] '+(startMeterValue+currentPowerDelivered));
+                    }
+                    else
+                    {
+                        await this.setStoreValue('meter_power_cache',await this.getCapabilityValue('meter_power'));
+                        console.log('✅ 0.12: Reset power meter cache to '+(await this.getCapabilityValue('meter_power')));
+                    }
+                }
+                if(this.hasCapability('measure_power')) {
+                    let MeterValue_kW = Math.max(...last_info.map(item => item.MOM_POWER_KW || 0))
+                    if(MeterValue_kW==null || MeterValue_kW ==0)
+                    {
+                        const intervalMeterValue = await this.getStoreValue('meter_power_interval_cache');
+                        let deltaDeliverd = currentPowerDelivered - intervalMeterValue;
+                        if(deltaDeliverd==0)
+                        {
+                            console.log('✅ 0.13: No power deliverd, set usage to 0 ');
+                            await this.setCapabilityValue('measure_power', 0);
+                        } else {
+                            let average_kW = deltaDeliverd / (2 / 60);
+                            await this.setCapabilityValue('measure_power', (average_kW*1000));
+                            await this.setStoreValue('meter_power_interval_cache',currentPowerDelivered);
+                            console.log('✅ 0.13: Updated power usage to '+(average_kW*1000)+' delta:'+deltaDeliverd+' based on prev:'+intervalMeterValue+' new:'+currentPowerDelivered);
+                        }
+                    } else {
+                        await this.setCapabilityValue('measure_power', (MeterValue_kW*1000));
+                        await this.setStoreValue('meter_power_interval_cache',currentPowerDelivered);
+                        console.log('✅ 0.13: Updated power usage to '+(MeterValue_kW*1000)+' collected from API');
+                    }
+                }                    
+            } else {
+                //Store the capability value of the meter_power in the cache so we can use it
+                console.log('✅ 0.12: No active charging state '+(last_info[0].STATUS));
+                //await this.setStoreValue('meter_power_interval_cache',0);
+                await this.setStoreValue('meter_power_cache',await this.getCapabilityValue('meter_power'));
+                if(this.hasCapability('measure_power')) {
+                     await this.setCapabilityValue('measure_power', 0);
+                }
+                if(this.hasCapability('meter_consumedcurrent')) {
+                    await this.setCapabilityValue('meter_consumedcurrent', 0);
+                }
+            }
+        } catch (err) {
+            console.log('❌ 0.11: error getting power measurements: '+err.message);
+            return null;
+        }
+        return lastEvent;
+    }
+
     async updateDevice() {
         console.log('🔍 0.0: Lets update our charegepoint status');
         const settings = this.getSettings()
@@ -197,7 +294,7 @@ class Chargepoint extends Homey.Device {
                 chargePoint=point_base;
             }
             console.log('🔍 0.3: Attempt to get status of chargepoint device '+chargePoint.idx);
-            let triggerRefresh = await this.chargepointService.requestUpdate(chargePoint);
+            await this.chargepointService.requestUpdate(chargePoint);
             let point_details = await this.chargepointService.pointDetails(chargePoint);
             if(point_details) {
                 //Lets perform our pre-analysis on the status to fill our attributes
@@ -211,6 +308,7 @@ class Chargepoint extends Homey.Device {
             this.setUnavailable(err.message);
             return;
         }
+        let eventData = this.getLogLinedetailsAndSetMeters(chargePoint);
         console.log('✅ 0.3: Located chargepoints');
         console.debug('🔍 0.4: get previous status from cache');
         const prev = this.getStoreValue('cache')
@@ -327,10 +425,11 @@ class Chargepoint extends Homey.Device {
             }
         }
         //console.log(JSON.stringify(data.e))
-        this.setIfHasCapability('onoff', (data.e.free == 0))
+        this.setIfHasCapability('onoff',data.e.activeSession)
         this.setIfHasCapability('occupied', (data.e.free == 0))
         this.setIfHasCapability('charging', (data.e.charging > 0))
-        this.setIfHasCapability('evcharger_charging', (data.e.free == 0))
+        if(data.e.charing === 0) await this.setStoreValue('meter_power_interval_cache',0);
+        this.setIfHasCapability('evcharger_charging', data.e.activeSession)
         this.setIfHasCapability('connectors.total', data.e.total)
         this.setIfHasCapability('connectors.free', data.e.free)
         if(data.e.availablepower>0)
@@ -343,84 +442,13 @@ class Chargepoint extends Homey.Device {
             this.setIfHasCapability('active_card', data.e.cardname)
             if(data.e.charging > 0)
                 this.setIfHasCapability('evcharger_charging_state', 'plugged_in_charging')
-            else if (data.e.preparing > 0)
+            else if (data.e.preparingEvses > 0)
                 this.setIfHasCapability('evcharger_charging_state', 'plugged_in')
             else if (data.e.suspended > 0)
                 this.setIfHasCapability('evcharger_charging_state', 'plugged_in_paused')
         } else {
             this.setIfHasCapability('active_card', null)
             this.setIfHasCapability('evcharger_charging_state', 'plugged_out')
-        }
-
-        console.info('✅ device capabilities updated')
-        console.info('🔍 Get active session power delivered')
-        try {
-            console.log('✅ 0.10: Chargepoint power measurement details: ');
-            let session_details = await this.chargepointService.SessionLog(chargePoint);
-            
-            //console.dir(session_details, { depth: null });
-            let last_info = session_details.slice(0,2);
-            console.dir(last_info )
-            console.log('✅ 0.11: Chargepoint session details retrieved: last '+session_details.length);
-            if(last_info.STATUS=='10000')
-            {
-                let currentPowerDelivered=last_info.TRANS_ENERGY_DELIVERED_KWH;
-                if(currentPowerDelivered===null)
-                    currentPowerDelivered=0;
-                if(this.hasCapability('meter_consumedcurrent')) {
-                    await this.setCapabilityValue('meter_consumedcurrent', currentPowerDelivered);
-                }
-                
-                //Now add the delta of the current session to the status at the start of the session
-                if(this.hasCapability('meter_power')) {
-                    const startMeterValue = await this.getStoreValue('meter_power_cache');
-                    if(startMeterValue!==null)
-                    {
-                        await this.setCapabilityValue('meter_power', (startMeterValue+currentPowerDelivered));
-                        console.log('✅ 0.12: Updated power meter to, was on start ['+startMeterValue+'] '+(startMeterValue+currentPowerDelivered));
-                    }
-                    else
-                    {
-                        await this.setStoreValue('meter_power_cache',await this.getCapabilityValue('meter_power'));
-                        console.log('✅ 0.12: Reset power meter cache to '+(await this.getCapabilityValue('meter_power')));
-                    }
-                }
-                if(this.hasCapability('measure_power')) {
-                    let MeterValue_kW = last_info.MOM_POWER_KW;
-                    if(MeterValue_kW==null || MeterValue_kW ==0)
-                    {
-                        const intervalMeterValue = await this.getStoreValue('meter_power_interval_cache');
-                        let deltaDeliverd = currentPowerDelivered - intervalMeterValue;
-                        if(deltaDeliverd==0)
-                        {
-                            console.log('✅ 0.13: No power deliverd, set usage to 0 ');
-                            await this.setCapabilityValue('measure_power', 0);
-                        } else {
-                            let average_kW = deltaDeliverd / (2 / 60);
-                            await this.setCapabilityValue('measure_power', (average_kW*1000));
-                            await this.setStoreValue('meter_power_interval_cache',currentPowerDelivered);
-                            console.log('✅ 0.13: Updated power usage to '+(average_kW*1000)+' delta:'+deltaDeliverd+' based on prev:'+intervalMeterValue+' new:'+currentPowerDelivered);
-                        }
-                    } else {
-                        await this.setCapabilityValue('measure_power', (MeterValue_kW*1000));
-                        await this.setStoreValue('meter_power_interval_cache',currentPowerDelivered);
-                        console.log('✅ 0.13: Updated power usage to '+(MeterValue_kW*1000)+' collected from API');
-                    }
-                }                    
-            } else {
-                //Store the capability value of the meter_power in the cache so we can use it
-                console.log('✅ 0.12: No active charging state '+(last_info.STATUS));
-                await this.setStoreValue('meter_power_interval_cache',0);
-                await this.setStoreValue('meter_power_cache',await this.getCapabilityValue('meter_power'));
-                if(this.hasCapability('measure_power')) {
-                     await this.setCapabilityValue('measure_power', 0);
-                }
-                if(this.hasCapability('meter_consumedcurrent')) {
-                    await this.setCapabilityValue('meter_consumedcurrent', 0);
-                }
-            }
-        } catch (err) {
-            console.log('❌ 0.11: error getting power measurements: '+err.message);
         }
 
         console.info('now retrieve the current months charge sessions')

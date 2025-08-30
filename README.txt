@@ -1,4 +1,4 @@
-Unofficial app for 50five (formerly New Motion and Shell Recharge). Adds support for private EV charging points found on https://50five-snl.evc-net.com/.
+Unofficial app for 50five (formerly New Motion and Shell Recharge). Adds support for private EV charging points found on https://50five-snl.evc-net.com/. The portal URL may be different for your country, update this in the app settings using repair or during pairing.
 
 This app is inspired on the great work of Jaime Visser's The New motion app.
 I rewrote the app to make it work with the private chargers instead of the public charge points.
