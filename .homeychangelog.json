@@ -169,5 +169,8 @@
   },
   "4.1.6": {
     "en": "repair wizard fix"
+  },
+  "4.1.7": {
+    "en": "Improved usage and connection state detection"
   }
 }
