@@ -172,5 +172,8 @@
   },
   "4.1.7": {
     "en": "Improved usage and connection state detection"
+  },
+  "4.1.8": {
+    "en": "Improved usage and connection state detection"
   }
 }
