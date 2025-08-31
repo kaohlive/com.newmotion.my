@@ -175,5 +175,8 @@
   },
   "4.1.8": {
     "en": "Improved usage and connection state detection"
+  },
+  "4.1.9": {
+    "en": "More improvements on measurements"
   }
 }
