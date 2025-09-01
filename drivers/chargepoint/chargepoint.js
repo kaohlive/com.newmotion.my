@@ -14,7 +14,14 @@ module.exports.enhance = function (data) {
     data.e = { connectors: {} }
     data.e.total = 1;
     //Preparing is when the cable is in and hooked, but no active session started
-    data.e.preparingEvses = data.NOTIFICATION === 'Preparing transaction' ? 1 : data.NOTIFICATION === 'Transactie voorbereiden' ? 1 : 0;
+    //Finalizing when the session is completed but the cable is still hooked up
+    data.e.preparingEvses = data.NOTIFICATION === 'Preparing transaction'
+         ? 1 : data.NOTIFICATION === 'Transactie voorbereiden'
+         ? 1 : data.NOTIFICATION === 'Finishing transaction'
+         ? 1 : data.NOTIFICATION === 'Transactie afronden'
+         ? 1 : data.NOTIFICATION === 'Transaction en préparation'
+         ? 1 : data.NOTIFICATION === 'Transaction en cours de clôture'
+         ? 1 : 0;
     //Status is also 0 when preparing, take that in account
     data.e.free = data.STATUS === '0' ? data.e.preparingEvses>0 ? 0 : 1 : 0;
     //Charging is truly drawing power
