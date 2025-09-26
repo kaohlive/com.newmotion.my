@@ -181,5 +181,8 @@
   },
   "4.1.10": {
     "en": "connected state now enabled when cable is left connected after stopping a session"
+  },
+  "4.1.11": {
+    "en": "Energy meter fix"
   }
 }
