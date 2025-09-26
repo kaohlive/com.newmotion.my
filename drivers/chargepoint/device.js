@@ -221,8 +221,15 @@ class Chargepoint extends Homey.Device {
                     }
                     else
                     {
-                        await this.setStoreValue('meter_power_cache',await this.getCapabilityValue('meter_power'));
-                        console.log('✅ 0.12: Reset power meter cache to '+(await this.getCapabilityValue('meter_power')));
+                        const meterPower = await this.getCapabilityValue('meter_power');
+                        if(meterPower!==null){ 
+                            await this.setStoreValue('meter_power_cache',meterPower);
+                            console.log('✅ 0.12: Reset power meter cache to '+(meterPower));
+                        } else {
+                            await this.setCapabilityValue('meter_power', 0);
+                            await this.setStoreValue('meter_power_cache',0);
+                            console.log('✅ 0.12: Reset power meter cache to base 0');
+                        }
                     }
                 }
                 if(this.hasCapability('measure_power')) {
