@@ -184,5 +184,8 @@
   },
   "4.1.11": {
     "en": "Energy meter fix"
+  },
+  "4.1.12": {
+    "en": "Improved usage estimates for older devices"
   }
 }
