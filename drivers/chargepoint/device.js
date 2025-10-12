@@ -3,6 +3,7 @@
 const Homey = require('homey')
 const FF = require('../../lib/50five')
 const CP = require('./chargepoint')
+const { DateTime } = require('luxon')
 
 class Chargepoint extends Homey.Device {
 
@@ -161,6 +162,126 @@ class Chargepoint extends Homey.Device {
     }
 
 
+    /**
+     * Mask sensitive card information in strings
+     * @param {string} cardNumber - Card number to mask
+     * @returns {string} Masked card number showing only last 6 digits
+     */
+    maskCardNumber(cardNumber) {
+        if (!cardNumber || typeof cardNumber !== 'string') return cardNumber;
+        if (cardNumber.length <= 6) return cardNumber;
+        return cardNumber.slice(0, -6).replace(/./g, '*') + cardNumber.slice(-6);
+    }
+
+    /**
+     * Recursively sanitize an object to mask sensitive data before logging
+     * @param {any} obj - Object to sanitize
+     * @param {number} depth - Current recursion depth
+     * @returns {any} Sanitized copy of the object
+     */
+    sanitizeForLogging(obj, depth = 0) {
+        // Prevent infinite recursion
+        if (depth > 10) return '[Max depth reached]';
+
+        // Handle null/undefined
+        if (obj === null || obj === undefined) return obj;
+
+        // Handle primitives
+        if (typeof obj !== 'object') return obj;
+
+        // Handle arrays
+        if (Array.isArray(obj)) {
+            return obj.map(item => this.sanitizeForLogging(item, depth + 1));
+        }
+
+        // Handle objects
+        const sanitized = {};
+        const sensitiveKeys = [
+            'printedNumber', 'cardnumber', 'card_number',
+            'CARDID', 'cardid', 'cardName', 'cardname',
+            'CARD_NUMBER', 'card', 'rfid'
+        ];
+
+        for (const [key, value] of Object.entries(obj)) {
+            // Check if this key contains sensitive data
+            const isSensitive = sensitiveKeys.some(sk =>
+                key.toLowerCase().includes(sk.toLowerCase())
+            );
+
+            if (isSensitive && typeof value === 'string') {
+                sanitized[key] = this.maskCardNumber(value);
+            } else if (typeof value === 'object') {
+                sanitized[key] = this.sanitizeForLogging(value, depth + 1);
+            } else {
+                sanitized[key] = value;
+            }
+        }
+
+        return sanitized;
+    }
+
+    /**
+     * Safe console.dir wrapper that masks sensitive data
+     * @param {any} obj - Object to log
+     * @param {object} options - console.dir options
+     */
+    safeLog(obj, options = { depth: null }) {
+        const sanitized = this.sanitizeForLogging(obj);
+        console.dir(sanitized, options);
+    }
+
+    /**
+     * Parse localized date strings like "12-okt.-2025 23:22:46" (Dutch format)
+     * @param {string} dateString - The localized date string
+     * @returns {DateTime} Luxon DateTime object
+     */
+    parseLocalizedDate(dateString) {
+        // Dutch month abbreviations mapping
+        const dutchMonths = {
+            'jan.': 1, 'feb.': 2, 'mrt.': 3, 'apr.': 4, 'mei': 5, 'jun.': 6,
+            'jul.': 7, 'aug.': 8, 'sep.': 9, 'okt.': 10, 'nov.': 11, 'dec.': 12
+        };
+
+        // Try to parse Dutch format: "12-okt.-2025 23:22:46"
+        const dutchPattern = /(\d{1,2})-([\w\.]+)-(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/;
+        const match = dateString.match(dutchPattern);
+
+        if (match) {
+            const [, day, monthStr, year, hour, minute, second] = match;
+            const month = dutchMonths[monthStr.toLowerCase()];
+
+            if (month) {
+                return DateTime.fromObject({
+                    year: parseInt(year),
+                    month: month,
+                    day: parseInt(day),
+                    hour: parseInt(hour),
+                    minute: parseInt(minute),
+                    second: parseInt(second)
+                });
+            }
+        }
+
+        // Fallback: try standard formats with Luxon
+        const formats = [
+            'dd-MMM-yyyy HH:mm:ss',
+            'yyyy-MM-dd HH:mm:ss',
+            'dd/MM/yyyy HH:mm:ss'
+        ];
+
+        for (const format of formats) {
+            const dt = DateTime.fromFormat(dateString, format, { locale: 'nl' });
+            if (dt.isValid) return dt;
+        }
+
+        // Last resort: try ISO format
+        const dt = DateTime.fromISO(dateString);
+        if (dt.isValid) return dt;
+
+        console.warn('Could not parse date string:', dateString);
+        return DateTime.now();
+    }
+
     extractTransactionData(eventData) {
         const meterStopMatch = eventData.match(/Meter stop:\s*(\d+)\s*Wh/);
         const meterStartMatch = eventData.match(/Meter start:\s*(\d+)\s*Wh/);
@@ -185,14 +306,14 @@ class Chargepoint extends Homey.Device {
             console.log('✅ 0.11: Chargepoint session details retrieved: last '+session_details.length);
             //We need to analyze the last two lines, if state is ready
             let last_info = session_details.slice(0,2);
-            console.dir(last_info )
+            this.safeLog(last_info);
             //Get the last event reason if available
             if(session_details.length>2)
             {
                 lastEvent = this.extractTransactionData(session_details[2].EVENT_DATA);
                 //Enrich with addition last info value
                 lastEvent.info = last_info[0].EVENT_DATA.match(/Info:\s*(\w+)/);
-                console.dir(lastEvent)
+                this.safeLog(lastEvent);
                 console.log('✅ 0.11: Chargepoint session details retrieved: last '+session_details.length);
             } else {
                 console.log('✅ 0.11: We could not find event data');
@@ -200,7 +321,17 @@ class Chargepoint extends Homey.Device {
             }
             if(last_info[0].STATUS=='10000')
             {
-                let currentPowerDelivered=Math.max(...last_info.map(item => item.TRANS_ENERGY_DELIVERED_KWH || 0));
+                // Find the item with the maximum TRANS_ENERGY_DELIVERED_KWH
+                let maxItem = last_info.reduce((max, item) => {
+                    let value = item.TRANS_ENERGY_DELIVERED_KWH || 0;
+                    //console.log('Findind max, compare item '+value+' with  current max '+(max.TRANS_ENERGY_DELIVERED_KWH || 0))
+                    return value > (max.TRANS_ENERGY_DELIVERED_KWH || 0) ? item : max;
+                }, { TRANS_ENERGY_DELIVERED_KWH: 0 });
+                this.safeLog(maxItem);
+                // Extract both values
+                let currentPowerDelivered = maxItem.TRANS_ENERGY_DELIVERED_KWH || 0;
+                let currentPowerDeliveredTime = maxItem.LOG_DATE;
+
                 //let currentPowerDelivered=last_info.TRANS_ENERGY_DELIVERED_KWH;
                 if(currentPowerDelivered===null)
                     currentPowerDelivered=0;
@@ -238,6 +369,19 @@ class Chargepoint extends Homey.Device {
                     {
                         //In this case we estimate
                         const intervalMeterValue = await this.getStoreValue('meter_power_interval_cache');
+                        const prevMeterReadTimeRaw = await this.getStoreValue('meter_power_interval_cache_time');
+
+                        // Use Luxon for date parsing and time calculations
+                        const prevMeterReadTime = prevMeterReadTimeRaw
+                        ? (typeof prevMeterReadTimeRaw === 'string'
+                            ? this.parseLocalizedDate(prevMeterReadTimeRaw)
+                            : DateTime.fromJSDate(new Date(prevMeterReadTimeRaw)))
+                        : DateTime.now().minus({ minutes: 2 }); // fallback to 2 minutes ago, our default interval
+
+                        const currentReadTime = typeof currentPowerDeliveredTime === 'string'
+                            ? this.parseLocalizedDate(currentPowerDeliveredTime)
+                            : DateTime.fromJSDate(new Date(currentPowerDeliveredTime));
+
                         let deltaDeliverd = currentPowerDelivered - intervalMeterValue;
                         if(deltaDeliverd==0)
                         {
@@ -245,12 +389,34 @@ class Chargepoint extends Homey.Device {
                             await this.setCapabilityValue('measure_power', 0);
                         } else {
                             if(deltaDeliverd>0){
-                                let average_kW = deltaDeliverd / (2 / 60);
+
+                                // Validate DateTime objects before calculating difference
+                                if (!currentReadTime.isValid || !prevMeterReadTime.isValid) {
+                                    console.log('❌ 0.13: Invalid date/time values detected. Current:', currentPowerDeliveredTime, 'Previous:', prevMeterReadTimeRaw);
+                                    console.log('Current valid:', currentReadTime.isValid, 'Previous valid:', prevMeterReadTime.isValid);
+                                    return;
+                                }
+
+                                // Calculate time difference using Luxon
+                                const timeDiff = currentReadTime.diff(prevMeterReadTime, ['hours', 'minutes', 'seconds']);
+                                const deltaHours = timeDiff.as('hours');
+                                const deltaSeconds = Math.floor(timeDiff.as('seconds'));
+
+                                // Ensure deltaHours is positive and reasonable (not zero or negative)
+                                if (deltaHours <= 0 || !isFinite(deltaHours)) {
+                                    console.log('⚠️ 0.13: Invalid time difference ('+deltaHours+' hours), skipping power calculation');
+                                    return;
+                                }
+
+                                let average_kW = deltaDeliverd / deltaHours;
                                 await this.setCapabilityValue('measure_power', (average_kW*1000));
                                 //During charing we cant go backwards in our delivered power, so then its just a pauze state or other reading error
                                 if(currentPowerDelivered>intervalMeterValue && currentPowerDelivered>=0)
+                                {
                                     await this.setStoreValue('meter_power_interval_cache',currentPowerDelivered);
-                                console.log('✅ 0.13: Updated power usage to '+(average_kW*1000)+' delta:'+deltaDeliverd+' based on prev:'+intervalMeterValue+' new:'+currentPowerDelivered);
+                                    await this.setStoreValue('meter_power_interval_cache_time',currentPowerDeliveredTime);
+                                }
+                                console.log('✅ 0.13: Updated power usage to '+(average_kW*1000)+' W, delta:'+deltaDeliverd+' kWh based on prev:'+intervalMeterValue+' new:'+currentPowerDelivered+' with '+deltaSeconds+' seconds ('+timeDiff.toHuman()+')'+ ' interval reading');
                             } else {
                                 console.log('✅ 0.13: Delta delivered was negative, cant really happen so skip this moment');
                             }
@@ -258,6 +424,7 @@ class Chargepoint extends Homey.Device {
                     } else {
                         await this.setCapabilityValue('measure_power', (MeterValue_kW*1000));
                         await this.setStoreValue('meter_power_interval_cache',currentPowerDelivered);
+                        await this.setStoreValue('meter_power_interval_cache_time',currentPowerDeliveredTime);
                         console.log('✅ 0.13: Updated power usage to '+(MeterValue_kW*1000)+' collected from API');
                     }
                 }                    
@@ -303,7 +470,7 @@ class Chargepoint extends Homey.Device {
             } else {
                 console.log('✅ 0.2.1: Chargepoint needs 50five upgrade, lets locate its base: ');
                 const point_base = await this.chargepointService.getSinglePointBySerial(serial);
-                console.dir(point_base, { depth: null });
+                this.safeLog(point_base, { depth: null });
                 if(point_base==null) {
                     console.log('⚠️ 0.2.1: No chargepoint data could be located in your account');
                     return;
@@ -319,7 +486,7 @@ class Chargepoint extends Homey.Device {
             if(point_details) {
                 //Lets perform our pre-analysis on the status to fill our attributes
                 data = CP.enhance(point_details);
-                console.dir(data, { depth: null });
+                this.safeLog(data, { depth: null });
                 this.setAvailable();
             }
             //We dont mark it available till we got the status at least once
@@ -371,6 +538,14 @@ class Chargepoint extends Homey.Device {
                         //carname:this.getStoreValue('car').name
                     }, {} );
                 });
+
+                // Add timeline notification for session started (connector occupied)
+                const cardName = data.e.cardname ?? 'Unknown card';
+                this.homey.notifications.createNotification({
+                    excerpt: `Charging session started with ${cardName}`
+                }).catch(err => {
+                    console.error('Failed to create timeline notification:', err);
+                });
             } else if (prev.e.free<prev.e.total && data.e.total == data.e.free) {
                 this.driver.ready().then(() => {
                     console.log('Trigger stop event, all connectors are now free.');
@@ -385,6 +560,20 @@ class Chargepoint extends Homey.Device {
                         //,
                         //carname:this.getStoreValue('car').name
                     }, {} );
+                });
+
+                // Add timeline notification for session stopped (connector free)
+                const cardName = prev.e.cardname ?? 'Unknown card';
+                const lastSession = this.hasCapability('meter_consumedlast')
+                    ? this.getCapabilityValue('meter_consumedlast')
+                    : null;
+
+                this.homey.notifications.createNotification({
+                    excerpt: lastSession
+                        ? `Charging session ended for ${cardName}. Last session: ${lastSession.toFixed(2)} kWh`
+                        : `Charging session ended for ${cardName}`
+                }).catch(err => {
+                    console.error('Failed to create timeline notification:', err);
                 });
             }
             //So a connector became available
@@ -424,6 +613,20 @@ class Chargepoint extends Homey.Device {
                         //carname:this.getStoreValue('car').name
                     }, {} );
                 });
+
+                // Add timeline notification for charging stopped
+                const cardName = prev.e.cardname ?? 'Unknown card';
+                const consumedCurrent = this.hasCapability('meter_consumedcurrent')
+                    ? this.getCapabilityValue('meter_consumedcurrent')
+                    : null;
+
+                this.homey.notifications.createNotification({
+                    excerpt: consumedCurrent
+                        ? `Charging stopped for ${cardName}. Total: ${consumedCurrent.toFixed(2)} kWh`
+                        : `Charging stopped for ${cardName}`
+                }).catch(err => {
+                    console.error('Failed to create timeline notification:', err);
+                });
             }
             //A connector has started charging
             if(prev.e.charging < data.e.charging) {
@@ -437,6 +640,18 @@ class Chargepoint extends Homey.Device {
                         cardname:data.e.cardname ?? '',
                         carname: 'deprecated'
                     }, {} );
+                });
+
+                // Add timeline notification for charging started
+                const cardName = data.e.cardname ?? 'Unknown card';
+                const maxPower = data.e.availablepower > 0
+                    ? ` (${(data.e.availablepower/1000).toFixed(1)} kW)`
+                    : '';
+
+                this.homey.notifications.createNotification({
+                    excerpt: `Charging started for ${cardName}${maxPower}`
+                }).catch(err => {
+                    console.error('Failed to create timeline notification:', err);
                 });
             }
         } else {
@@ -514,7 +729,7 @@ class Chargepoint extends Homey.Device {
                 const cardmatch = sessions[0]["5"].match(/<\/i>\s*(.+)$/);
 
                 if (cardmatch && cardmatch[1]) {
-                    console.log('Extracted card value:', cardmatch[1].trim().slice(0, -6).replace(/./g, '*') + cardmatch[1].trim().slice(-6));
+                    console.log('Extracted card value:', this.maskCardNumber(cardmatch[1].trim()));
                 } else {
                     console.log('No match found.');
                 }
