@@ -14,8 +14,8 @@ class Chargepoint extends Homey.Device {
         this.start_update_loop();
         this.setAvailable();
         //register flow cards
-        this._startGenericChargingCard = this.homey.flow.getActionCard('start_charge_generic_card');
-        this.setupStartGenericChargingCard();        
+        this._startGenericWithCard = this.homey.flow.getActionCard('start_charge_with_card');
+        this.setupStartGenericWithCard();          
         this._stopGenericCharging = this.homey.flow.getActionCard('stop_charge_generic');
         this.setupStopGenericCharging();   
         this._conditionActiveCharge = this.homey.flow.getConditionCard('charging_state');
@@ -29,6 +29,8 @@ class Chargepoint extends Homey.Device {
         //Deprecated
         this._startGenericCharging = this.homey.flow.getActionCard('start_charge_generic');
         this.setupStartGenericCharging(); 
+        this._startGenericChargingCard = this.homey.flow.getActionCard('start_charge_generic_card');
+        this.setupStartGenericChargingCard();
         //This version introduces the active card capability so add it to existing devices
         if(this.hasCapability('onoff'))
             await this.removeCapability('onoff');
@@ -831,6 +833,29 @@ class Chargepoint extends Homey.Device {
           });
       }
 
+    setupStartGenericWithCard() {
+        this._startGenericWithCard
+          .registerRunListener(async (args, state) => {
+            console.log('attempt to start charging using card: '+args.card.name);
+            return new Promise((resolve, reject) => {
+                console.log('now send the charge command');
+                const chargePoint = this.getStoreValue('50five');
+                this.chargepointService.startSession(chargePoint, chargePoint.channel, args.card.printedNumber).then(() => {
+                    resolve(true);
+                }, (_error) => {
+                  resolve(false);
+                });
+            });
+          });
+        this._startGenericWithCard
+          .registerArgumentAutocompleteListener('card', async (query) => {
+            return this.myChargeCards();
+          });
+      }
+
+
+
+//Deprecated
     setupStartGenericChargingCard() {
         this._startGenericChargingCard
           .registerRunListener(async (args, state) => {
@@ -851,7 +876,6 @@ class Chargepoint extends Homey.Device {
           });
       }
 
-//Deprecated
     setupStartGenericCharging() {
         this._startGenericCharging
           .registerRunListener(async (args, state) => {
