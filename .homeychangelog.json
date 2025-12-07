@@ -187,5 +187,8 @@
   },
   "4.1.12": {
     "en": "Improved usage estimates for older devices"
+  },
+  "4.1.13": {
+    "en": "deprecated charge with power"
   }
 }

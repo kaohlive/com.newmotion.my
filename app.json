@@ -7,7 +7,7 @@
   },
   "sdk": 3,
   "brandColor": "#82BC41",
-  "version": "4.1.12",
+  "version": "4.1.13",
   "compatibility": ">=12.4.5",
   "author": {
     "name": "Kaoh",
@@ -487,6 +487,7 @@
     "actions": [
       {
         "id": "start_charge_generic_card",
+        "deprecated": true,
         "title": {
           "en": "Start a charging session using a specific card",
           "nl": "Start een laad sessie met een specifieke kaart"
@@ -518,8 +519,35 @@
               "en": "Provide the power that the car can pull from this point",
               "nl": "Geef het vermogen welke de auto uit het laadpunt kan laden"
             },
-            "unit": "kWh",
-            "deprecated": true
+            "unit": "kWh"
+          }
+        ]
+      },
+      {
+        "id": "start_charge_with_card",
+        "title": {
+          "en": "Start a charging session using a specific card",
+          "nl": "Start een laad sessie met een specifieke kaart"
+        },
+        "titleFormatted": {
+          "en": "Start a charging session using [[card]]",
+          "nl": "Start een laad sessie met de kaar [[card]]"
+        },
+        "hint": {
+          "en": "Start a charge session using card..."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=chargepoint"
+          },
+          {
+            "type": "autocomplete",
+            "name": "card",
+            "placeholder": {
+              "en": "Select the charge card"
+            }
           }
         ]
       },
@@ -571,6 +599,7 @@
       },
       {
         "id": "update_charge_speed",
+        "deprecated": true,
         "title": {
           "en": "Update the current power usage",
           "nl": "Stel het gebruikte vermogen in"
@@ -597,8 +626,7 @@
             },
             "unit": "kWh"
           }
-        ],
-        "deprecated": true
+        ]
       },
       {
         "id": "stop_charge_generic",
