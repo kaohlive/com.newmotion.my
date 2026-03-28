@@ -138,6 +138,7 @@ class Chargepoint extends Homey.Device {
     }
 
     onDeleted() {
+        this._deleted = true;
         if (this._timer) {
             clearInterval(this._timer)
         }
@@ -448,6 +449,7 @@ class Chargepoint extends Homey.Device {
     }
 
     async updateDevice() {
+        if (this._deleted) return;
         console.log('🔍 0.0: Lets update our charegepoint status');
         const settings = this.getSettings()
         let fresh_token = await this.chargepointService.getAuthCookie()
@@ -499,6 +501,18 @@ class Chargepoint extends Homey.Device {
         }
         let eventData = this.getLogLinedetailsAndSetMeters(chargePoint);
         console.log('✅ 0.3: Located chargepoints');
+
+        // Update online/offline status immediately when we have fresh data
+        // This must happen before early returns so the alarm is always current
+        if (data != null && this.hasCapability('alarm_online')) {
+            let oldOnlineState = await this.getCapabilityValue('alarm_online');
+            this.setIfHasCapability('alarm_online', !data.e.latestOnlineStatus)
+            if (!oldOnlineState && !data.e.latestOnlineStatus) {
+                console.log('Trigger went offline event, charger is offline.');
+                this.driver.triggerOffline(this, {}, {});
+            }
+        }
+
         console.debug('🔍 0.4: get previous status from cache');
         const prev = this.getStoreValue('cache')
         if (data!=null)
@@ -506,12 +520,12 @@ class Chargepoint extends Homey.Device {
         else
         {
             console.log('⚠️ 0.5: There is no new data, no need to trigger events ');
-            return;                        
+            return;
         }
         if(prev== null)
         {
             console.log('⚠️ 0.5: There is no cached data, no option to trigger events ');
-            return; 
+            return;
         }
         console.log('✅ 0.5: replace cache with new status, and alter device capabilities');
         if (prev.e.free !== null) {
@@ -660,15 +674,6 @@ class Chargepoint extends Homey.Device {
             console.debug('no cached data available, so no events can be generated')
         }
 
-        if (this.hasCapability('alarm_online')) {
-            let oldOnlineState = await this.getCapabilityValue('alarm_online');
-            this.setIfHasCapability('alarm_online',!data.e.latestOnlineStatus)
-            if(!oldOnlineState && !data.e.latestOnlineStatus)
-            {
-                console.log('Trigger went offline event, charger is offline.');
-                this.driver.triggerOffline( this, {}, {} );
-            }
-        }
         //console.log(JSON.stringify(data.e))
         this.setIfHasCapability('onoff',data.e.activeSession)
         this.setIfHasCapability('occupied', (data.e.free == 0))
@@ -700,7 +705,7 @@ class Chargepoint extends Homey.Device {
         date.setHours(23, 59, 59, 0); //End Of day
         //Get from the first of this month till now
         await this.chargepointService.TransactionHistory(new Date(date.getFullYear(), date.getMonth(), 1), date).then(sessions => {
-            if(sessions.length>0)
+            if(sessions && sessions.length>0)
             {
                 //console.log('Update device loaded this month sessions:'+JSON.stringify(sessions));
                 var sum = sessions.reduce((accumulator, currentsession) => {
