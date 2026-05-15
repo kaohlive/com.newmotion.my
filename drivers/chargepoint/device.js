@@ -50,8 +50,8 @@ class Chargepoint extends Homey.Device {
             await this.addCapability('evcharger_charging_state');
         if(!this.hasCapability('evcharger_charging'))
             await this.addCapability('evcharger_charging');
-        else
-            this.registerCapabilityListener('evcharger_charging', this.onCapabilityOnoff.bind(this));
+        // Always register the listener, regardless of whether the capability was just added or already existed
+        this.registerCapabilityListener('evcharger_charging', this.onCapabilityOnoff.bind(this));
         if(this.getSetting('include_power')){
             this.log('Power is included, check capabilities');
             if(!this.hasCapability('measure_power'))
@@ -105,17 +105,16 @@ class Chargepoint extends Homey.Device {
         console.info('turn charging '+value)
         if(value)
         {
-            const printedNumber=this.getSetting('card_printedNumber')
-            this.log('Start new charging session, using settings card: '+printedNumber.slice(0, -6).replace(/./g, '*') + printedNumber.slice(-6));
+            this.log('Resume charging session (unblock) - session stays active, no card needed');
             const chargePoint = await this.getStoreValue('50five');
-            await this.chargepointService.startSession(chargePoint, chargePoint.channel, this.getSetting('card_printedNumber'))
-            this.pause_update_loop(20000)
+            await this.chargepointService.unblockSession(chargePoint, chargePoint.channel)
+            this.pause_update_loop(10000)
         }
         else
         {
-            this.log('End charging session');
+            this.log('Pause charging session (block) - session stays active, can resume without card');
             const chargePoint = await this.getStoreValue('50five');
-            await this.chargepointService.stopSession(chargePoint, chargePoint.channel)
+            await this.chargepointService.blockSession(chargePoint, chargePoint.channel)
             this.pause_update_loop(10000)
         }
     }
