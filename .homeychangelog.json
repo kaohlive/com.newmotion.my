@@ -193,5 +193,11 @@
   },
   "4.1.14": {
     "en": "Improved offline detection"
+  },
+  "4.1.16": {
+    "en": "Fix: charging toggle is now registered on first install; toggle now pauses/resumes the active session (Block/Unblock) instead of starting a new transaction. Contributed by Coert Noordermeer."
+  },
+  "4.1.17": {
+    "en": "Fix: charging toggle now starts a new session with the configured card when no session is active, instead of failing silently. Contributed by Coert Noordermeer."
   }
 }

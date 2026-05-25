@@ -7,7 +7,7 @@
   },
   "sdk": 3,
   "brandColor": "#82BC41",
-  "version": "4.1.16",
+  "version": "4.1.17",
   "compatibility": ">=12.4.5",
   "author": {
     "name": "Kaoh",
@@ -22,6 +22,10 @@
     "developers": [
       {
         "name": "hansallis"
+      },
+      {
+        "name": "Coert Noordermeer",
+        "email": "noordermeerc@delawareconsulting.com"
       }
     ]
   },
