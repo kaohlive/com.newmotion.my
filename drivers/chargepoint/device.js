@@ -100,23 +100,32 @@ class Chargepoint extends Homey.Device {
 
 
     // this method is called when the Device has requested a state change (turned on or off)
-	async onCapabilityOnoff( value, opts ) {
-        this.setIfHasCapability('evcharger_charging', value)
-        console.info('turn charging '+value)
-        if(value)
-        {
-            this.log('Resume charging session (unblock) - session stays active, no card needed');
-            const chargePoint = await this.getStoreValue('50five');
-            await this.chargepointService.unblockSession(chargePoint, chargePoint.channel)
-            this.pause_update_loop(10000)
+    async onCapabilityOnoff( value, opts ) {
+        this.setIfHasCapability('evcharger_charging', value);
+        console.info('turn charging ' + value);
+        const chargePoint = await this.getStoreValue('50five');
+        const state = this.getCapabilityValue('evcharger_charging_state');
+        const hasActiveSession = state === 'plugged_in_charging' || state === 'plugged_in_paused';
+
+        if (value) {
+            if (hasActiveSession) {
+                this.log('Resume charging session (unblock) - active session found, no card needed');
+                await this.chargepointService.unblockSession(chargePoint, chargePoint.channel);
+            } else {
+                this.log('Start new charging session - no active session, using card');
+                const rfid = chargePoint.card?.printedNumber || this.getSetting('card_printedNumber') || '';
+                await this.chargepointService.startSession(chargePoint, chargePoint.channel, rfid);
+            }
+        } else {
+            if (hasActiveSession) {
+                this.log('Pause charging session (block) - session stays active, can resume without card');
+                await this.chargepointService.blockSession(chargePoint, chargePoint.channel);
+            } else {
+                this.log('Stop charging session - no active session to block');
+                await this.chargepointService.stopSession(chargePoint, chargePoint.channel);
+            }
         }
-        else
-        {
-            this.log('Pause charging session (block) - session stays active, can resume without card');
-            const chargePoint = await this.getStoreValue('50five');
-            await this.chargepointService.blockSession(chargePoint, chargePoint.channel)
-            this.pause_update_loop(10000)
-        }
+        this.pause_update_loop(10000);
     }
     
     delay(t, val) {
