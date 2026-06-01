@@ -86,6 +86,19 @@
         "nl": "Laad vermogen in Energie weergeven"
       },
       "value": true
+    },
+    {
+      "id": "pause_on_stop",
+      "type": "checkbox",
+      "label": {
+        "en": "Pause session on stop (instead of stopping it)",
+        "nl": "Sessie pauzeren bij stoppen (in plaats van beëindigen)"
+      },
+      "hint": {
+        "en": "ON: blocks the session so it can be resumed without RFID card (useful for automatic energy management). OFF: stops the session completely, RFID card required to start again (default, same as v4.1.14).",
+        "nl": "AAN: pauzeert de sessie zodat deze hervat kan worden zonder laadpas (handig voor automatisch energiebeheer). UIT: beëindigt de sessie volledig, laadpas nodig om opnieuw te starten (standaard, zelfde als v4.1.14)."
+      },
+      "value": false
     }
   ]
 }
