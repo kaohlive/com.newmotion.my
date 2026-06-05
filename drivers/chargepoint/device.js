@@ -118,10 +118,16 @@ class Chargepoint extends Homey.Device {
             }
         } else {
             if (hasActiveSession) {
-                this.log('Pause charging session (block) - session stays active, can resume without card');
-                await this.chargepointService.blockSession(chargePoint, chargePoint.channel);
+                const pauseOnStop = this.getSetting('pause_on_stop') ?? false;
+                if (pauseOnStop) {
+                    this.log('Pause charging session (block) - pause_on_stop enabled, session stays active, can resume without card');
+                    await this.chargepointService.blockSession(chargePoint, chargePoint.channel);
+                } else {
+                    this.log('Stop charging session - pause_on_stop disabled (default), ending session completely');
+                    await this.chargepointService.stopSession(chargePoint, chargePoint.channel);
+                }
             } else {
-                this.log('Stop charging session - no active session to block');
+                this.log('Stop charging session - no active session');
                 await this.chargepointService.stopSession(chargePoint, chargePoint.channel);
             }
         }
