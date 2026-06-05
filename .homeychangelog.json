@@ -202,5 +202,8 @@
   },
   "4.1.18": {
     "en": "Security: bump form-data to 2.5.5 to patch GHSA-fjxv-7rqg-78g4."
+  },
+  "4.1.19": {
+    "en": "Fix: new 'pause_on_stop' device setting. Default OFF stops the session fully (restores v4.1.14 behaviour); ON pauses via Block for resume without RFID card. Contributed by Coert Noordermeer."
   }
 }
