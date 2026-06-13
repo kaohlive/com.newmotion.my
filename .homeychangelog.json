@@ -205,5 +205,8 @@
   },
   "4.1.19": {
     "en": "Fix: new 'pause_on_stop' device setting. Default OFF stops the session fully (restores v4.1.14 behaviour); ON pauses via Block for resume without RFID card. Contributed by Coert Noordermeer."
+  },
+  "4.1.20": {
+    "en": "Fix: charging toggle no longer reverts to ON after stop; API errors are now surfaced instead of silently swallowed; stop_charge flow card now honours the pause_on_stop setting; misc stability fixes. Contributed by Coert Noordermeer."
   }
 }
