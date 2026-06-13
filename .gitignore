@@ -1,2 +1,5 @@
 # Ignore the .homeybuild directory
 .homeybuild/
+
+# npm-managed; reproducible via `npm install` from package-lock.json
+node_modules/
