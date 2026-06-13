@@ -131,9 +131,9 @@ class Chargepoint extends Homey.Device {
                 await this.chargepointService.stopSession(chargePoint, chargePoint.channel);
             }
         }
-        this.pause_update_loop(10000);
+        this.pause_update_loop(30000);
     }
-    
+
     delay(t, val) {
         return new Promise(function(resolve) {
             setTimeout(function() {
@@ -144,11 +144,13 @@ class Chargepoint extends Homey.Device {
 
     onAdded() {
         //Lets persist the printedNumber of the selected card during setup into a setting
-        const point =this.getData();
-        this.setSettings({
-            card_printedNumber:point.card.printedNumber
-        });
-        Console.log('Stored selected card into device settings')
+        const point = this.getData();
+        if (point.card?.printedNumber) {
+            this.setSettings({
+                card_printedNumber: point.card.printedNumber
+            });
+        }
+        console.log('Stored selected card into device settings')
     }
 
     onDeleted() {
@@ -692,7 +694,7 @@ class Chargepoint extends Homey.Device {
         this.setIfHasCapability('onoff',data.e.activeSession)
         this.setIfHasCapability('occupied', (data.e.free == 0))
         this.setIfHasCapability('charging', (data.e.charging > 0))
-        this.setIfHasCapability('evcharger_charging', data.e.activeSession)
+        this.setIfHasCapability('evcharger_charging', data.e.charging > 0)
         this.setIfHasCapability('connectors.total', data.e.total)
         this.setIfHasCapability('connectors.free', data.e.free)
         if(data.e.availablepower>0)
@@ -921,12 +923,21 @@ class Chargepoint extends Homey.Device {
             console.log('attempt to stop the active charge session');
             return new Promise((resolve, reject) => {
                 const chargePoint = this.getStoreValue('50five');
-                this.chargepointService.stopSession(chargePoint, chargePoint.channel).then(() => {
+                const state = this.getCapabilityValue('evcharger_charging_state');
+                const hasActiveSession = state === 'plugged_in_charging' || state === 'plugged_in_paused';
+                const pauseOnStop = this.getSetting('pause_on_stop') ?? false;
+                let action;
+                if (hasActiveSession && pauseOnStop) {
+                    action = this.chargepointService.blockSession(chargePoint, chargePoint.channel);
+                } else {
+                    action = this.chargepointService.stopSession(chargePoint, chargePoint.channel);
+                }
+                action.then(() => {
                     resolve(true);
                 }, (_error) => {
                   resolve(false);
                 });
-                this.pause_update_loop(10000)
+                this.pause_update_loop(30000);
             });
           });
       }
