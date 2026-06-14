@@ -1,4 +1,7 @@
 {
+  "4.1.21": {
+    "en": "Fix: update loop and pause_update_loop now catch unhandled rejections from updateDevice() to prevent app crashes on detached async callbacks. Contributed by Coert Noordermeer."
+  },
   "2.1.0": {
     "en": "Added more detailed flow events and base support for homey 3.0 power management. "
   },

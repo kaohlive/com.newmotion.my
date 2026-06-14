@@ -162,11 +162,10 @@ class Chargepoint extends Homey.Device {
 
     start_update_loop() {
         this._timer = setInterval(() => {
-            this.updateDevice();
+            this.updateDevice().catch(err => this.error('update loop:', err));
         }, 120000); //2 minute
     }
 
-    
     pause_update_loop(delay) {
         //Clear the timer to ensure we dont hit one to soon
         if (this._timer) {
@@ -175,8 +174,8 @@ class Chargepoint extends Homey.Device {
             this._timer = null;
         }
         setTimeout(() => {
-            this.updateDevice()
-            this.start_update_loop()
+            this.updateDevice().catch(err => this.error('pause_update_loop:', err));
+            this.start_update_loop();
         }, delay); // custom delay
     }
 
